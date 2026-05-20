@@ -1,0 +1,152 @@
+<div class="min-h-screen bg-slate-50/60 pb-20">
+  
+  <div class="w-full h-48 bg-gradient-to-r from-blue-900 via-blue-800 to-slate-800 relative">
+    <div class="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+    <div class="max-w-5xl mx-auto h-full px-6 flex items-end pb-6">
+      <a routerLink="/" class="inline-flex items-center gap-2 text-xs font-bold text-white/80 hover:text-white uppercase tracking-wider transition-all bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 shadow-sm select-none">
+        ← Regresar al Home
+      </a>
+    </div>
+  </div>
+
+  <div class="max-w-5xl mx-auto px-4 md:px-6 -mt-12 relative z-10">
+    
+    @if (especialista()) {
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+        
+        <div class="md:col-span-2 space-y-6">
+          
+          <div class="bg-white border border-slate-200/80 rounded-3xl p-6 md:p-8 shadow-sm flex flex-col sm:flex-row gap-6 items-center sm:items-start text-center sm:text-left relative overflow-hidden">
+            
+            <div class="w-24 h-24 shrink-0 rounded-2xl bg-gradient-to-br from-blue-50 to-slate-100 border border-blue-100 flex items-center justify-center text-5xl shadow-sm relative">
+              {{ especialista()?.avatar_icono || '👨‍⚕️' }}
+              <span class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></span>
+            </div>
+
+            <div class="space-y-2.5 flex-grow">
+              <div class="space-y-1">
+                <div class="flex flex-wrap justify-center sm:justify-start items-center gap-2">
+                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-blue-50 border border-blue-200/60 text-blue-700 text-[10px] font-black uppercase tracking-wider rounded-md">
+                    ✓ Miembro Verificado
+                  </span>
+                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-slate-50 border border-slate-200 text-slate-500 text-[10px] font-bold uppercase tracking-wider rounded-md">
+                    Miembro desde: {{ especialista()?.fecha_registro ? (especialista()?.fecha_registro | date:'dd/MM/yyyy') : 'Reciente' }}
+                  </span>
+                </div>
+                <h1 class="text-3xl font-black text-slate-900 uppercase italic tracking-tight leading-tight pt-1">
+                  Dr. {{ especialista()?.nombres }} {{ especialista()?.apellidos }}
+                </h1>
+                <p class="text-xs font-extrabold text-blue-700 uppercase tracking-widest">
+                  Especialidad en {{ especialista()?.especialidad }}
+                </p>
+              </div>
+              
+              <div class="flex flex-wrap justify-center sm:justify-start gap-3 pt-1 border-t border-slate-100">
+                <span class="inline-flex items-center gap-1.5 text-slate-600 text-xs font-semibold">
+                  <span class="text-slate-400">📍 Residencia:</span> {{ especialista()?.pais }}
+                </span>
+                <span class="text-slate-200">|</span>
+                <span class="inline-flex items-center gap-1.5 text-slate-600 text-xs font-semibold">
+                  <span class="text-slate-400">🗣️ Idiomas:</span> {{ especialista()?.idiomas }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white border border-slate-200/80 rounded-3xl p-6 md:p-8 shadow-sm space-y-4 text-left">
+            <h3 class="font-black text-slate-900 text-sm uppercase italic tracking-wider border-b border-slate-100 pb-3 flex items-center gap-2 text-slate-800">
+              <span class="text-blue-700">📋</span> Perfil Profesional y Enfoque Terapéutico
+            </h3>
+            <p class="text-slate-600 text-sm font-medium leading-relaxed whitespace-pre-line bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+              {{ especialista()?.descripcion_trayectoria }}
+            </p>
+          </div>
+
+          <div class="bg-white border border-slate-200/80 rounded-3xl p-6 md:p-8 shadow-sm space-y-4 text-left">
+            <h3 class="font-black text-slate-900 text-sm uppercase italic tracking-wider border-b border-slate-100 pb-3 flex items-center gap-2 text-slate-800">
+              <span class="text-blue-700">📰</span> Artículos y Publicaciones Recientes
+            </h3>
+            
+            <div class="space-y-4 pt-2">
+              <div class="p-4 bg-slate-50 border border-slate-100 rounded-2xl space-y-2">
+                <div class="flex items-center justify-between text-[10px] text-slate-400 font-bold uppercase">
+                  <span>🧠 Gestión de Carga Mental</span>
+                  <span>Publicado Hoy</span>
+                </div>
+                <h4 class="font-bold text-slate-900 text-sm">Estrategias operativas contra el Burnout Académico</h4>
+                <p class="text-xs text-slate-600 leading-relaxed font-medium">
+                  Abordar las distorsiones cognitivas a tiempo mediante micro-hábitos estructurados permite al cerebro universitario liberar el exceso de cortisol...
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="space-y-6">
+          
+          <div class="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-5 text-left relative">
+            <div>
+              <h3 class="font-black text-slate-900 text-[11px] uppercase tracking-widest text-slate-400">
+                Acreditación Institucional
+              </h3>
+              <p class="text-[10px] text-slate-400 font-medium">Validado por la mesa de control de MindStep.</p>
+            </div>
+            
+            <div class="space-y-2.5 text-xs font-semibold text-slate-600">
+              <div class="p-3 bg-slate-50/60 rounded-xl border border-slate-200/40 space-y-1">
+                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Alma Máter</span>
+                <strong class="text-slate-800 uppercase text-xs">{{ especialista()?.universidad }}</strong>
+              </div>
+              
+              <div class="p-3 bg-slate-50/60 rounded-xl border border-slate-200/40 space-y-1">
+                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Registro de Colegiatura</span>
+                <strong class="text-blue-700 font-mono text-xs">{{ especialista()?.numero_colegiatura }}</strong>
+              </div>
+              
+              <div class="p-3 bg-slate-50/60 rounded-xl border border-slate-200/40 flex items-center justify-between">
+                <div>
+                  <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Público Asignado</span>
+                  <strong class="text-slate-800 text-xs">Carga Estudiantil</strong>
+                </div>
+                <span class="px-2.5 py-1 bg-blue-100 border border-blue-200 text-blue-700 font-black rounded-lg text-[9px] uppercase tracking-wider">
+                  {{ especialista()?.publico_objetivo }}
+                </span>
+              </div>
+            </div>
+
+            <div class="pt-2">
+              <a [href]="especialista()?.enlace_agenda || 'https://wa.me/51986575756'" target="_blank" class="w-full py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-black rounded-xl text-xs uppercase tracking-widest block text-center transition-all shadow-md hover:scale-[1.01]">
+                📢 Generar Consulta Instantánea
+              </a>
+              <p class="text-center text-[10px] text-slate-400 font-medium mt-3">
+                Canales oficiales protegidos por la red MindStep.
+              </p>
+            </div>
+          </div>
+
+          <div class="text-center">
+            <a routerLink="/" class="text-[10px] text-slate-400 font-black uppercase tracking-wider hover:text-blue-700 transition-all">
+              ✕ Cerrar Perfil Clínico
+            </a>
+          </div>
+
+        </div>
+
+      </div>
+    } @else {
+      <div class="p-16 bg-white border border-slate-200 rounded-3xl text-center space-y-4 max-w-xl mx-auto shadow-sm animate-pulse">
+        <div class="w-12 h-12 bg-blue-50 text-blue-700 rounded-2xl flex items-center justify-center mx-auto text-2xl font-bold">
+          ⏳
+        </div>
+        <div class="space-y-1">
+          <h4 class="font-black text-slate-900 text-sm uppercase italic tracking-wider">Sincronizando con Django</h4>
+          <p class="text-xs text-slate-400 font-medium max-w-xs mx-auto leading-normal">
+            Recuperando las credenciales auditadas del especialista desde el servidor local de SQLite...
+          </p>
+        </div>
+      </div>
+    }
+
+  </div>
+</div>

@@ -1,11 +1,12 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router'; 
 import { CuestionarioComponent, PerfilUsuario } from '../cuestionario/cuestionario.component';
 import { AppSugerenciaComponent } from './components/sugerencia/sugerencia.component';
 import { AppPanelComponent } from './components/panel/panel.component';
 import { DiagnosticoModalComponent } from './components/diganostico-modal.component/diagnostico-modal.component';
-import { LoginComponent } from '../login/login.component'; // 🚀 IMPORTACIÓN CORREGIDA (Ajusta la ruta según tus carpetas)
+import { LoginComponent } from '../login/login.component';
+import { EspecialistaService } from '../especialista/registro-especialista/especialista.service'; // 🚀 Ajusta la ruta a tu servicio
 
 @Component({
   selector: 'app-home',
@@ -17,28 +18,38 @@ import { LoginComponent } from '../login/login.component'; // 🚀 IMPORTACIÓN 
     AppSugerenciaComponent, 
     AppPanelComponent,
     DiagnosticoModalComponent,
-    LoginComponent // 👈 Registrado para que funcione el popup flotante de login
+    LoginComponent
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
+  private especialistaService = inject(EspecialistaService); // 👈 Inyectamos el servicio de la BD
+
   estadoFlujo = signal<'QUIZ' | 'AUTH' | 'RESULTADOS'>('QUIZ');
   modoReevaluacion = signal<boolean>(false);
-
-  // 🚀 SEÑALES DE CONTROL PARA EL MODAL DE DIAGNÓSTICO (TEST)
   mostrarModal = signal<boolean>(false);
+  mostrarModalLogin = signal<boolean>(false);
   perfilReciente = signal<PerfilUsuario | null>(null);
 
-  // 🚪 SEÑAL DE CONTROL PARA EL MODAL DE LOGIN (NAVBAR)
-  mostrarModalLogin = signal<boolean>(false);
+  // 🩺 SEÑAL DE ESPECIALISTAS VIVOS DESDE LA BD
+  listaEspecialistas = signal<any[]>([]);
 
   ngOnInit() {
-    // Sincroniza estado inicial si ya existe sesión
     this.verificarSesion();
+    this.cargarStaffMedico(); // 🚀 Jalamos los psicólogos de SQLite al arrancar
   }
 
-  // ⚙️ CÓMPUTO REACTIVO: Revisa si hay sesión activa para pintar el "👋 Hola" en el Navbar
+  // Carga los datos desde Django REST Framework
+  cargarStaffMedico() {
+    this.especialistaService.obtenerEspecialistas().subscribe({
+      next: (data) => {
+        this.listaEspecialistas.set(data); // Guardamos los médicos reales en la señal
+      },
+      error: (err) => console.error('Error al traer médicos de SQLite:', err)
+    });
+  }
+
   usuarioLogueado = computed(() => {
     const active = localStorage.getItem('session_active');
     return active ? JSON.parse(active) : null;
@@ -47,43 +58,23 @@ export class HomeComponent implements OnInit {
   verificarSesion() {
     const active = localStorage.getItem('session_active');
     const datosTest = localStorage.getItem('usuario_mindstep');
-    
-    // Si hizo el test pero no tiene sesión activa en este navegador, los enlazamos
     if (datosTest && !active) {
       const u = JSON.parse(datosTest);
       localStorage.setItem('session_active', JSON.stringify({ rol: 'usuario', nombres: u.nombres }));
     }
   }
 
-  // 🚀 ESCUCHADOR REACTIVO: Atrapa el término del cuestionario sin recargar la página
   onUsuarioActualizado(perfil: PerfilUsuario) {
-    // Registra tanto la base del test como la sesión activa
     localStorage.setItem('usuario_mindstep', JSON.stringify(perfil));
     localStorage.setItem('session_active', JSON.stringify({ rol: 'usuario', nombres: perfil.nombres }));
-    
-    this.perfilReciente.set(perfil);       // Le pasa los datos frescos al modal
-    this.modoReevaluacion.set(false);      // Esconde el cuestionario de la pantalla
-    this.mostrarModal.set(true);           // ¡Bum! Levanta el popup flotante de diagnóstico
+    this.perfilReciente.set(perfil);       
+    this.modoReevaluacion.set(false);      
+    this.mostrarModal.set(true);           
   }
 
-  // MÉTODOS DE APERTURA Y CIERRE (LOGIN NAVBAR)
-  abrirLogin() {
-    this.mostrarModalLogin.set(true);
-  }
-
-  cerrarLogin() {
-    this.mostrarModalLogin.set(false);
-  }
-
-  activarReevaluacion() {
-    this.modoReevaluacion.set(true);
-  }
-
-  cancelarReevaluacion() {
-    this.modoReevaluacion.set(false);
-  }
-
-  cerrarPopupDiagnostico() {
-    this.mostrarModal.set(false);
-  }
+  abrirLogin() { this.mostrarModalLogin.set(true); }
+  cerrarLogin() { this.mostrarModalLogin.set(false); }
+  activarReevaluacion() { this.modoReevaluacion.set(true); }
+  cancelarReevaluacion() { this.modoReevaluacion.set(false); }
+  cerrarPopupDiagnostico() { this.mostrarModal.set(false); }
 }

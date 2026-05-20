@@ -21,12 +21,17 @@ export const routes: Routes = [
     path: 'buscar-especialista',
     loadComponent: () => import('./features/buscador-expertos/buscador-expertos.component').then(m => m.BuscadorExpertosComponent)
   },
-  // 5. 🚀 ACOPLADO: Ruta Lazy Loading exacta para tu nuevo formulario dinámico de reclutamiento
+  // 5. Formulario dinámico de reclutamiento (Django)
   {
     path: 'registro-especialista',
     loadComponent: () => import('./features/especialista/registro-especialista/registro-especialista.component').then(m => m.RegistroEspecialistaComponent)
   },
-  // 6. Comodín de seguridad: Si escriben cualquier ruta inválida, los redirecciona limpio a la Home
+  // 🎯 6. NUEVA RUTA DINÁMICA: Carga el perfil extendido (Corregido con su coma al final)
+  {
+    path: 'perfil-especialista/:id',
+    loadComponent: () => import('./features/especialista/perfil.especialista/perfil-especialista.component').then(m => m.PerfilEspecialistaComponent)
+  }, // 👈 ¡ESTA COMA ERA VITAL!
+  // 7. Comodín de seguridad
   {
     path: '**',
     redirectTo: ''

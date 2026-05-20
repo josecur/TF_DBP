@@ -1,118 +1,109 @@
-import { Component, signal, computed, inject } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-
-interface CampoFormulario {
-  id: string;
-  label: string;
-  type: 'text' | 'password' | 'select' | 'textarea';
-  placeholder?: string;
-  options?: string[];
-  fullWidth?: boolean; // 📐 Para controlar si toma 1 o 2 columnas en el Grid
-}
+import { EspecialistaService } from './especialista.service';
 
 @Component({
   selector: 'app-registro-especialista',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
+  providers: [EspecialistaService],
   templateUrl: './registro-especialista.component.html',
   styleUrls: ['./registro-especialista.component.css']
 })
 export class RegistroEspecialistaComponent {
   private router = inject(Router);
+  private especialistaService = inject(EspecialistaService);
 
-  // 🔑 PASO 1: Cuenta (Vertical / Limpio)
-  bloqueCredenciales: CampoFormulario[] = [
-    { id: 'usuario', label: 'Nombre de Usuario *', type: 'text', placeholder: 'g.huisa.med' },
-    { id: 'correo', label: 'Correo Institucional *', type: 'text', placeholder: 'usuario@mindstep.med' },
-    { id: 'password', label: 'Contraseña de Acceso *', type: 'password', placeholder: '••••••••' }
-  ];
-
-  // 🎓 PASO 2: Información Profesional (Rejilla de 2 columnas)
-  bloqueProfesional: CampoFormulario[] = [
-    { id: 'nombre', label: 'Nombres y Apellidos *', type: 'text', placeholder: 'Dr. Giancarlo Huisa', fullWidth: true },
-    { id: 'colegiatura', label: 'Colegiatura (C.Ps.P / CMP) *', type: 'text', placeholder: 'C.Ps.P 45871' },
-    { id: 'universidad', label: 'Universidad de Egreso *', type: 'text', placeholder: 'USIL' },
-    { id: 'especialidad', label: 'Especialización *', type: 'select', options: ['Psicología Clínica', 'Neuropsicología', 'Terapia Conductual', 'Salud Preventiva Ocupacional'], fullWidth: true }
-  ];
-
-  // 🌎 PASO 3: Segmentación y Destino (Moderno + Textarea amplio)
-  bloqueDestino: CampoFormulario[] = [
-    { id: 'pais', label: 'País *', type: 'select', options: ['Perú', 'Colombia', 'México', 'Chile', 'Argentina'] },
-    { id: 'idiomas', label: 'Idiomas *', type: 'select', options: ['Español Nativo', 'Español / Inglés Avanzado', 'Español / Portugués'] },
-    { id: 'publicoObjetivo', label: 'Público Objetivo (Según Carga Mental) *', type: 'select', options: ['Carga Mental Baja (Prevención)', 'Carga Mental Moderada (Intervención Corta)', 'Carga Mental Crítica (Soporte Urgente)'], fullWidth: true },
-    { id: 'descripcion', label: 'Trayectoria Profesional *', type: 'textarea', placeholder: 'Resume tus certificaciones, años de experiencia o enfoque terapéutico...', fullWidth: true }
-  ];
-
+  // 🔄 Control del flujo del formulario
   pasoActual = signal<number>(1);
-  triggerValidacion = signal<number>(0);
+  terminosAceptados = signal<boolean>(false);
+
+  // 📝 Señales Atómicas e Independientes (Evita problemas de mutación de objetos)
+  username = signal<string>('');
+  password = signal<string>('');
+  correo = signal<string>('');
   
-  // 🔄 Variable exclusiva para el Checkbox de TyC
-  aceptaTerminos = false;
+  nombreCompleto = signal<string>('');
+  colegiatura = signal<string>('');
+  universidad = signal<string>('');
+  especialidad = signal<string>('Psicología Clínica');
+  
+  pais = signal<string>('Perú');
+  idiomas = signal<string>('Español');
+  publicoObjetivo = signal<string>('MODERADO');
+  descripcion = signal<string>('');
 
-  datos: Record<string, string> = {
-    usuario: '', correo: '', password: '',
-    nombre: '', colegiatura: '', universidad: '',
-    pais: 'Perú', idiomas: 'Español / Inglés Avanzado', especialidad: 'Psicología Clínica',
-    publicoObjetivo: 'Carga Mental Moderada (Intervención Corta)', descripcion: ''
-  };
-
-  // Validaciones de los 3 pasos
+  // 🎛️ Validadores Reactivos Letra por Letra
   paso1Valido = computed(() => {
-    this.triggerValidacion();
-    return !!this.datos['usuario']?.trim() && this.datos['correo']?.includes('@') && this.datos['password']?.trim().length >= 6;
+    return this.username().trim().length >= 4 &&
+           this.password().trim().length >= 4 &&
+           this.correo().includes('@');
   });
 
   paso2Valido = computed(() => {
-    this.triggerValidacion();
-    return !!this.datos['nombre']?.trim() && !!this.datos['colegiatura']?.trim() && !!this.datos['universidad']?.trim();
+    return this.nombreCompleto().trim().length > 5 &&
+           this.colegiatura().trim().length >= 4 &&
+           this.universidad().trim().length > 3;
   });
 
   paso3Valido = computed(() => {
-    this.triggerValidacion();
-    return !!this.datos['descripcion']?.trim() && this.datos['descripcion'].length > 10 && this.aceptaTerminos; // 🔐 Exige el Checkbox
+    return this.descripcion().trim().length >= 10 && this.terminosAceptados();
   });
 
-  onKeyup() {
-    this.triggerValidacion.update(v => v + 1);
+  // 🧭 Métodos de Navegación del Formulario
+  siguientePaso() {
+    if (this.pasoActual() === 1 && this.paso1Valido()) {
+      this.pasoActual.set(2);
+    } else if (this.pasoActual() === 2 && this.paso2Valido()) {
+      this.pasoActual.set(3);
+    }
   }
 
-  avanzarPaso() {
-    if (this.pasoActual() === 1 && this.paso1Valido()) this.pasoActual.set(2);
-    else if (this.pasoActual() === 2 && this.paso2Valido()) this.pasoActual.set(3);
+  anteriorPaso() {
+    if (this.pasoActual() > 1) {
+      this.pasoActual.set(this.pasoActual() - 1);
+    }
   }
 
-  retrocederPaso() {
-    if (this.pasoActual() > 1) this.pasoActual.update(p => p - 1);
-  }
-
+  // 🚀 Guardado final en la base de datos SQLite a través de Django REST Framework
   guardarEspecialista() {
-    if (!this.paso3Valido()) return;
+    // Romper cadena si faltan nombres o apellidos
+    const partesNombre = this.nombreCompleto().trim().split(' ');
+    const primerNombre = partesNombre[0] || 'Especialista';
+    const apellidosRestantes = partesNombre.slice(1).join(' ') || 'Profesional';
 
-    const medicosPrevios = localStorage.getItem('staff_especialistas');
-    let listaMedicos = medicosPrevios ? JSON.parse(medicosPrevios) : [];
-
-    let tagObjetivo = 'MODERADO';
-    if (this.datos['publicoObjetivo'].includes('Baja')) tagObjetivo = 'BAJO';
-    if (this.datos['publicoObjetivo'].includes('Crítica')) tagObjetivo = 'CRITICO';
-
+    // Formatear el JSON idéntico a las columnas del modelo de Django
     const nuevoMedico = {
-      nombre: this.datos['nombre'],
-      especialidad: this.datos['especialidad'],
-      descripcion: this.datos['descripcion'],
-      universidad: this.datos['universidad'],
-      pais: this.datos['pais'],
-      idiomas: this.datos['idiomas'],
-      publicoObjetivo: tagObjetivo,
-      avatar: this.datos['nombre'].toLowerCase().includes('dra') || this.datos['nombre'].toLowerCase().includes('elena') ? '👩‍⚕️' : '👨‍⚕️',
-      whatsapp: '986575756'
+      username: this.username(),
+      password_hash: this.password(), 
+      correo: this.correo(),
+      nombres: primerNombre,
+      apellidos: apellidosRestantes,
+      numero_colegiatura: this.colegiatura(),
+      universidad: this.universidad(),
+      especialidad: this.especialidad(),
+      pais: this.pais(),
+      idiomas: this.idiomas(),
+      publico_objetivo: this.publicoObjetivo(),
+      descripcion_trayectoria: this.descripcion(),
+      distorsiones_tratadas: ["CATASTROPHIZING", "MIND_READING"], 
+      telefono: '986575756',
+      enlace_agenda: 'https://wa.me/51986575756',
+      avatar_icono: this.nombreCompleto().toLowerCase().includes('dra') ? '👩‍⚕️' : '👨‍⚕️'
     };
 
-    listaMedicos.push(nuevoMedico);
-    localStorage.setItem('staff_especialistas', JSON.stringify(listaMedicos));
-
-    alert('¡Cuenta creada y perfil profesional incorporado con éxito!');
-    this.router.navigate(['/']);
+    // Petición HTTP POST real hacia tu backend
+    this.especialistaService.registrarEspecialista(nuevoMedico).subscribe({
+      next: (respuesta: any) => {
+        alert('¡Registro corporativo guardado exitosamente en SQLite!');
+        this.router.navigate(['/']); 
+      },
+      error: (err: any) => {
+        console.error('Error al conectar con Django:', err);
+        alert('Error al registrar. Verifica que el usuario o colegiatura no estén duplicados.');
+      }
+    });
   }
 }
