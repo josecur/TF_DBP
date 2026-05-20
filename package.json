@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@angular/cli": "^17.3.17",
+    "pnpm": "^11.1.2"
+  }
+}
