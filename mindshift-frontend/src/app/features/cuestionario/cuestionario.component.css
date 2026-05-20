@@ -1,0 +1,41 @@
+/* Inputs Ejecutivos en Contraste Claro */
+.input-formal {
+  background-color: #f1f5f9 !important; /* Slate 100 */
+  border: 1px solid #cbd5e1 !important; /* Slate 300 */
+  color: #0f172a !important;            /* Texto Marino Oscuro */
+  padding: 0.75rem 1rem !important;
+  border-radius: 0.5rem !important;
+  width: 100% !important;
+  font-size: 0.95rem !important;
+  display: block !important;
+  transition: all 0.2s ease;
+}
+
+.input-formal:focus {
+  outline: none !important;
+  border-color: #1e40af !important; /* Azul Real */
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 2px rgba(30, 64, 175, 0.15) !important;
+}
+
+/* Pestañas */
+.tab-active {
+  color: #1e40af !important;
+  border-bottom: 2px solid #1e40af !important;
+  font-weight: 700 !important;
+}
+
+.tab-inactive {
+  color: #64748b !important;
+  font-weight: 500 !important;
+  border-bottom: 2px solid transparent !important;
+}
+
+/* Alineación limpia del ojito */
+.relative button[type="button"] {
+  right: 1rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100% !important;
+}

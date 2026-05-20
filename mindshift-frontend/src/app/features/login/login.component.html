@@ -1,0 +1,68 @@
+<div class="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+  
+  <div class="bg-white border border-slate-200 rounded-3xl max-w-sm w-full p-6 shadow-xl relative space-y-5 animate-in fade-in zoom-in-95 duration-200 text-left">
+    
+    <button (click)="cerrarModal()" type="button" class="absolute top-4 right-4 w-7 h-7 bg-slate-50 border border-slate-200 text-slate-400 font-black rounded-lg flex items-center justify-center text-xs hover:bg-slate-100 hover:text-slate-600 transition-all select-none">
+      ✕
+    </button>
+
+    <div class="text-center space-y-1 pt-2">
+      <span class="text-[9px] font-bold text-blue-700 uppercase tracking-widest block">Portal de Acceso</span>
+      <h3 class="text-xl font-black text-slate-900 uppercase italic leading-none">Iniciar Sesión</h3>
+    </div>
+
+    <div class="grid grid-cols-2 p-1 bg-slate-100 border border-slate-200/60 rounded-xl text-center">
+      <button type="button" (click)="cambiarRol('usuario')" 
+              [class]="rolSeleccionado() === 'usuario' ? 'bg-white text-blue-700 font-bold shadow-sm' : 'text-slate-500 font-medium hover:text-slate-700'"
+              class="py-1.5 rounded-lg text-[10px] uppercase tracking-wider transition-all select-none">
+        👨‍🎓 Estudiante
+      </button>
+      <button type="button" (click)="cambiarRol('especialista')" 
+              [class]="rolSeleccionado() === 'especialista' ? 'bg-white text-blue-700 font-bold shadow-sm' : 'text-slate-500 font-medium hover:text-slate-700'"
+              class="py-1.5 rounded-lg text-[10px] uppercase tracking-wider transition-all select-none">
+        🩺 Especialista
+      </button>
+    </div>
+
+    <form (ngSubmit)="procesarLogin()" class="space-y-4">
+      
+      <div class="space-y-1">
+        <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+          {{ rolSeleccionado() === 'usuario' ? 'Usuario o Correo Electrónico *' : 'Nombre o Identificador Médico *' }}
+        </label>
+        <input type="text" [(ngModel)]="credenciales.identificador" name="identificador" required [placeholder]="rolSeleccionado() === 'usuario' ? 'usuario@correo.com' : 'Ej. Dr. Mendoza'" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-700 focus:bg-white transition-all">
+      </div>
+
+      <div class="space-y-1">
+        <div class="flex justify-between items-center">
+          <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">Contraseña *</label>
+          <a class="text-[9px] font-bold text-slate-400 hover:text-blue-700 transition-colors cursor-pointer select-none">¿La olvidaste?</a>
+        </div>
+        <input type="password" [(ngModel)]="credenciales.password" name="password" required placeholder="••••••••" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-700 focus:bg-white transition-all">
+      </div>
+
+      <button type="submit" [disabled]="!credenciales.identificador.trim() || credenciales.password.trim().length < 4" class="w-full py-3 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed">
+        Acceder al Panel Corporativo →
+      </button>
+
+      <div class="text-center pt-2 border-t border-slate-100 mt-3">
+        @if (rolSeleccionado() === 'especialista') {
+          <p class="text-[10px] text-slate-400 font-medium">
+            ¿Eres un nuevo profesional de salud? 
+            <a routerLink="/registro-especialista" (click)="cerrarModal()" class="text-blue-700 font-bold hover:underline block mt-0.5 cursor-pointer">
+              Únete a la Red MindStep aquí
+            </a>
+          </p>
+        } @else {
+          <p class="text-[10px] text-slate-400 font-medium">
+            ¿No tienes un perfil de estudiante?
+            <a onclick="document.getElementById('test-section').scrollIntoView({behavior:'smooth'})" (click)="cerrarModal()" class="text-blue-700 font-bold hover:underline block mt-0.5 cursor-pointer">
+              Resuelve la Evaluación Inicial
+            </a>
+          </p>
+        }
+      </div>
+
+    </form>
+  </div>
+</div>

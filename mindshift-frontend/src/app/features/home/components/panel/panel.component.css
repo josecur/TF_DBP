@@ -1,0 +1,99 @@
+/* ==========================================================================
+   🎯 ARCHIVO: panel.component.css - ESTILOS EJECUTIVOS PARA EL CARRUSEL
+   ========================================================================== */
+
+/* Contenedor principal del carrusel */
+.group-slider {
+  position: relative;
+  background: transparent;
+}
+
+/* Forzar que la animación antigua infinita no interfiera con el movimiento por TypeScript */
+.tira-carrusel-infinito {
+  animation: none !important;
+}
+
+/* Transición suave para el desplazamiento de la tira */
+.transition-transform {
+  will-change: transform;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 🎛️ ESTILIZACIÓN DE LAS FLECHAS DE NAVEGACIÓN */
+button[type="button"] {
+  outline: none;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.25s ease-in-out;
+}
+
+/* Flecha izquierda y derecha flotantes */
+button[type="button"].absolute {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.02);
+  font-size: 1.5rem; /* Hace las flechas más legibles y simétricas */
+  line-height: 1;
+}
+
+/* Efecto Hover sobre las flechas */
+button[type="button"].absolute:hover {
+  background-color: #1d4ed8 !important; /* bg-blue-700 */
+  color: #ffffff !important;
+  border-color: #1d4ed8 !important;
+  transform: translateY(-50%) scale(1.1); /* Mantiene el centrado vertical y agranda un poquito */
+  box-shadow: 0 6px 16px rgba(29, 78, 216, 0.25);
+}
+
+/* Efecto cuando se le da clic (Active) */
+button[type="button"].absolute:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+
+/* 👨‍⚕️ TARJETAS DE LOS ESPECIALISTAS (CARDS) */
+.shrink-0 {
+  background: #ffffff;
+  border: 1px border #e2e8f0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Efecto Hover Premium sobre cada tarjeta de médico */
+.shrink-0:hover {
+  transform: translateY(-4px); /* Eleva la tarjeta ligeramente */
+  border-color: #3b82f6 !important; /* Borde azul brillante suave */
+  box-shadow: 0 12px 24px rgba(59, 130, 246, 0.08), 0 4px 8px rgba(0, 0, 0, 0.02);
+}
+
+/* Contenedor del Avatar circular del especialista */
+.w-16.h-16 {
+  transition: transform 0.3s ease;
+}
+
+/* Animación interna del emoji al pasar el mouse por la tarjeta */
+.shrink-0:hover .w-16.h-16 {
+  transform: scale(1.08) rotate(3deg);
+}
+
+/* Enlace inferior de unirse como especialista */
+a.underline {
+  position: relative;
+  text-decoration: none; /* Quitamos el subrayado nativo tosco */
+}
+
+/* Crear un subrayado animado elegante con pseudo-elemento */
+a.underline::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  transform: scaleX(0);
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background-color: #1d4ed8;
+  transform-origin: bottom right;
+  transition: transform 0.25s ease-out;
+}
+
+a.underline:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}

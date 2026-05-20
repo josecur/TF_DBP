@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Paleta Ejecutiva de Alto Contraste Balanceado */
+  --bg-corporate: #f8fafc;    /* Slate 50: Fondo claro, limpio y sumamente pulcro */
+  --bg-card: #ffffff;         /* Blanco puro: Tarjetas que resaltan con elegancia */
+  --border-formal: #e2e8f0;   /* Slate 200: Bordes finos, discretos y profesionales */
+  --text-primary: #0f172a;    /* Slate 900: Azul marino profundo para máxima legibilidad */
+  --text-secondary: #475569;  /* Slate 600: Gris corporativo para subtítulos */
+  --accent-blue: #1e40af;     /* Azul Real Ejecutivo: Transmite confianza y seriedad */
+  --bg-input-auth: #f1f5f9;   /* Slate 100: Fondo para los campos de texto */
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background-color: var(--bg-corporate);
+  color: var(--text-primary);
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar Sutil de Estilo Ofimático */
+::-webkit-scrollbar { 
+  width: 6px; 
+}
+::-webkit-scrollbar-track { 
+  background: var(--bg-corporate); 
+}
+::-webkit-scrollbar-thumb { 
+  background: #cbd5e1; 
+  border-radius: 8px; 
+}
+::-webkit-scrollbar-thumb:hover { 
+  background: #94a3b8; 
+}

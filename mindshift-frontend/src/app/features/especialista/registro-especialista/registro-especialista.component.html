@@ -1,0 +1,104 @@
+<div class="min-h-screen bg-slate-50 flex flex-col justify-center py-10 px-4 text-left">
+  
+  <div class="max-w-2xl w-full mx-auto bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
+    
+    <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+      <div class="space-y-0.5">
+        <span class="text-[9px] font-bold text-blue-700 uppercase tracking-widest block">Matrícula de Especialistas</span>
+        <h2 class="text-xl font-black text-slate-900 uppercase italic leading-none">
+          @if (pasoActual() === 1) { Credenciales de Acceso }
+          @if (pasoActual() === 2) { Información Académica }
+          @if (pasoActual() === 3) { Segmentación y Validación }
+        </h2>
+      </div>
+      <span class="text-xs font-mono font-bold px-3 py-1 bg-blue-50 border border-blue-100 text-blue-700 rounded-xl">
+        Paso {{ pasoActual() }} de 3
+      </span>
+    </div>
+
+    <div class="space-y-5">
+      
+      @if (pasoActual() === 1) {
+        <div class="space-y-4">
+          @for (campo of bloqueCredenciales; track campo.id) {
+            <div class="space-y-1">
+              <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">{{ campo.label }}</label>
+              <input [type]="campo.type" [(ngModel)]="datos[campo.id]" [name]="campo.id" (keyup)="onKeyup()" [placeholder]="campo.placeholder" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-700 focus:bg-white transition-all">
+            </div>
+          }
+          <button type="button" [disabled]="!paso1Valido()" (click)="avanzarPaso()" class="w-full py-3 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed">
+            Continuar al Perfil Professional →
+          </button>
+        </div>
+      }
+
+      @if (pasoActual() === 2) {
+        <div class="space-y-5">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            @for (campo of bloqueProfesional; track campo.id) {
+              <div class="space-y-1" [class.md:col-span-2]="campo.fullWidth">
+                <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">{{ campo.label }}</label>
+                
+                @if (campo.type === 'text') {
+                  <input type="text" [(ngModel)]="datos[campo.id]" [name]="campo.id" (keyup)="onKeyup()" [placeholder]="campo.placeholder" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-700 focus:bg-white transition-all">
+                }
+                @if (campo.type === 'select') {
+                  <select [(ngModel)]="datos[campo.id]" [name]="campo.id" (change)="onKeyup()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-700 focus:bg-white transition-all">
+                    @for (opcion of campo.options; track opcion) {
+                      <option [value]="opcion">{{ opcion }}</option>
+                    }
+                  </select>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="flex gap-3 pt-2">
+            <button type="button" (click)="retrocederPaso()" class="flex-1 py-3 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs uppercase tracking-wider transition-all">← Atrás</button>
+            <button type="button" [disabled]="!paso2Valido()" (click)="avanzarPaso()" class="flex-1 py-3 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-all shadow-sm disabled:opacity-40">Siguiente Paso →</button>
+          </div>
+        </div>
+      }
+
+      @if (pasoActual() === 3) {
+        <div class="space-y-5">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            @for (campo of bloqueDestino; track campo.id) {
+              <div class="space-y-1" [class.md:col-span-2]="campo.fullWidth">
+                <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">{{ campo.label }}</label>
+                
+                @if (campo.type === 'select') {
+                  <select [(ngModel)]="datos[campo.id]" [name]="campo.id" (change)="onKeyup()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-700 focus:bg-white transition-all">
+                    @for (opcion of campo.options; track opcion) {
+                      <option [value]="opcion">{{ opcion }}</option>
+                    }
+                  </select>
+                }
+                @if (campo.type === 'textarea') {
+                  <textarea [(ngModel)]="datos[campo.id]" [name]="campo.id" (keyup)="onKeyup()" [placeholder]="campo.placeholder" rows="3" maxlength="150" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:border-blue-700 focus:bg-white transition-all resize-none"></textarea>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/60 flex items-start gap-3 mt-2">
+            <input type="checkbox" id="tyc" [(ngModel)]="aceptaTerminos" (change)="onKeyup()" class="mt-0.5 w-4 h-4 rounded text-blue-700 border-slate-300 focus:ring-blue-500 cursor-pointer">
+            <label for="tyc" class="text-[11px] text-slate-500 font-medium leading-tight cursor-pointer select-none">
+              Acepto los <span class="text-blue-700 font-bold underline">Términos de Servicio</span> y la <span class="text-blue-700 font-bold underline">Política de Privacidad</span> de MindStep para la auditoría de mi acreditación profesional.
+            </label>
+          </div>
+
+          <div class="flex gap-3 pt-2">
+            <button type="button" (click)="retrocederPaso()" class="flex-1 py-3 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs uppercase tracking-wider transition-all">← Atrás</button>
+            <button type="button" [disabled]="!paso3Valido()" (click)="guardarEspecialista()" class="flex-1 py-3 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed">Finalizar Registro</button>
+          </div>
+        </div>
+      }
+
+      <div class="text-center pt-1">
+        <a routerLink="/" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider hover:text-slate-600 transition-colors">✕ Cancelar proceso</a>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -1,0 +1,13 @@
+/* Animación de flotado sutil y profesional */
+.animacion-flotante-sutil {
+  animation: flotarCorporativo 4s ease-in-out infinite;
+}
+
+@keyframes flotarCorporativo {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px); /* Un movimiento corto que denota fluidez y estilo */
+  }
+}

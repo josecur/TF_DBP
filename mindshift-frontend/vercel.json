@@ -1,0 +1,9 @@
+{
+  "buildCommand": "ng build",
+  "outputDirectory": "dist/mindshift-frontend/browser",
+  "framework": "angular",
+  "installCommand": "npm install",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
