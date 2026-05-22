@@ -2,5 +2,29 @@
   "dependencies": {
     "@angular/cli": "^17.3.17",
     "pnpm": "^11.1.2"
-  }
+  },
+  "name": "mindshift",
+  "version": "1.0.0",
+  "description": "��#\u0000 \u0000D\u0000E\u0000S\u0000A\u0000R\u0000O\u0000L\u0000L\u0000O\u0000B\u0000A\u0000S\u0000A\u0000D\u0000O\u0000\r\u0000 \u0000",
+  "main": "index.js",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "scripts": {
+  "start": "concurrently \"npm run start:front\" \"npm run start:back\"",
+  "start:front": "cd mindshift-frontend && ng serve",
+  "start:back": "cd mindshift-backend && ..\\venv\\Scripts\\activate && python manage.py runserver"
+},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/josecur/TF_DBP.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/josecur/TF_DBP/issues"
+  },
+  "homepage": "https://github.com/josecur/TF_DBP#readme"
 }

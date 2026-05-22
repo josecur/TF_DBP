@@ -20,7 +20,7 @@ export class RegistroEspecialistaComponent {
   pasoActual = signal<number>(1);
   terminosAceptados = signal<boolean>(false);
 
-  // 📝 Señales Atómicas e Independientes (Evita problemas de mutación de objetos)
+  // 📝 Señales Atómicas e Independientes
   username = signal<string>('');
   password = signal<string>('');
   correo = signal<string>('');
@@ -34,6 +34,10 @@ export class RegistroEspecialistaComponent {
   idiomas = signal<string>('Español');
   publicoObjetivo = signal<string>('MODERADO');
   descripcion = signal<string>('');
+
+  // 📸 Nuevas señales para procesar la subida del archivo físico
+  imagenBase64 = signal<string>(''); 
+  imagenPrevia = signal<string>('');
 
   // 🎛️ Validadores Reactivos Letra por Letra
   paso1Valido = computed(() => {
@@ -67,6 +71,28 @@ export class RegistroEspecialistaComponent {
     }
   }
 
+  // 📥 MÉTODOS DE CONVERSIÓN: Captura la imagen local del PC y la convierte a String
+  alSeleccionarArchivo(event: any) {
+    const archivo: File = event.target.files[0];
+    
+    if (archivo) {
+      if (!archivo.type.startsWith('image/')) {
+        alert('Por favor, selecciona un archivo de tipo imagen válido.');
+        return;
+      }
+
+      const lector = new FileReader();
+      
+      lector.onload = () => {
+        const cadenaResultado = lector.result as string;
+        this.imagenPrevia.set(cadenaResultado); // Genera la previsualización en el HTML
+        this.imagenBase64.set(cadenaResultado); // Genera la cadena Base64 pura
+      };
+
+      lector.readAsDataURL(archivo);
+    }
+  }
+
   // 🚀 Guardado final en la base de datos SQLite a través de Django REST Framework
   guardarEspecialista() {
     // Romper cadena si faltan nombres o apellidos
@@ -91,14 +117,20 @@ export class RegistroEspecialistaComponent {
       distorsiones_tratadas: ["CATASTROPHIZING", "MIND_READING"], 
       telefono: '986575756',
       enlace_agenda: 'https://wa.me/51986575756',
-      avatar_icono: this.nombreCompleto().toLowerCase().includes('dra') ? '👩‍⚕️' : '👨‍⚕️'
+      // 🎯 LA CLAVE: Si subió foto mandamos el Base64, sino se inyecta una silueta neutra por defecto
+      avatar_icono: this.imagenBase64() || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'
     };
 
     // Petición HTTP POST real hacia tu backend
     this.especialistaService.registrarEspecialista(nuevoMedico).subscribe({
       next: (respuesta: any) => {
         alert('¡Registro corporativo guardado exitosamente en SQLite!');
-        this.router.navigate(['/']); 
+        
+        // Guardamos en LocalStorage la respuesta que manda Django
+        localStorage.setItem('usuario_especialista', JSON.stringify(respuesta));
+        
+        // Redirección automática inmediata hacia el panel del especialista
+        this.router.navigate(['/dashboard-especialista']); 
       },
       error: (err: any) => {
         console.error('Error al conectar con Django:', err);

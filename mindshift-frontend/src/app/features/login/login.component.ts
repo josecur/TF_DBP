@@ -2,26 +2,32 @@ import { Component, signal, output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, HttpClientModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
   private router = inject(Router);
+  private http = inject(HttpClient);
+  private apiUrl = 'http://localhost:8000/api';
 
   // 🚪 Evento de salida para avisarle al Navbar cuándo cerrar el Popup
   alCerrar = output<void>();
 
   // Rol activo por defecto: 'usuario' o 'especialista'
   rolSeleccionado = signal<'usuario' | 'especialista'>('usuario');
+  
+  // Captura de errores para la UI
+  errorMensaje = signal<string | null>(null);
 
   // Campos del formulario
   credenciales = {
-    identificador: '', // Puede ser correo o usuario
+    identificador: '', // Correo electrónico corporativo o personal
     password: ''
   };
 
@@ -29,6 +35,7 @@ export class LoginComponent {
     this.rolSeleccionado.set(nuevoRol);
     this.credenciales.identificador = '';
     this.credenciales.password = '';
+    this.errorMensaje.set(null);
   }
 
   cerrarModal() {
@@ -36,6 +43,7 @@ export class LoginComponent {
   }
 
   procesarLogin() {
+    this.errorMensaje.set(null);
     const rol = this.rolSeleccionado();
     const id = this.credenciales.identificador.trim();
     const pass = this.credenciales.password.trim();
@@ -43,34 +51,63 @@ export class LoginComponent {
     if (!id || !pass) return;
 
     if (rol === 'usuario') {
-      // 📝 Validación para Usuario/Estudiante local
-      const usuarioLocal = localStorage.getItem('usuario_logueado');
-      if (usuarioLocal) {
-        const u = JSON.parse(usuarioLocal);
-        // Simulamos login exitoso con coincidencia básica para el MVP
-        localStorage.setItem('session_active', JSON.stringify({ rol: 'usuario', nombres: u.nombres || id }));
-        alert(`¡Bienvenido de vuelta, ${u.nombres || id}!`);
-        this.cerrarModal();
-        this.router.navigate(['/user-profile']);
-      } else {
-        // Cuenta genérica por si no ha hecho el test
-        localStorage.setItem('session_active', JSON.stringify({ rol: 'usuario', nombres: id }));
-        alert(`Sesión iniciada como ${id}`);
-        this.cerrarModal();
-        this.router.navigate(['/user-profile']);
-      }
-    } else {
-      // 🩺 Validación para Especialista/Médico
-      const medicosGuardados = localStorage.getItem('staff_especialistas');
-      const lista = medicosGuardados ? JSON.parse(medicosGuardados) : [];
+      // 📥 Flujo Alumno/Estudiante Conectado a la API Real de Django
+      const payload = { correo: id, password: pass };
       
-      // Busca si el usuario/correo ingresado coincide con alguno registrado en la Red
-      const medicoEncontrado = lista.find((m: any) => m.nombre.toLowerCase().includes(id.toLowerCase()));
+      this.http.post<any>(`${this.apiUrl}/alumnos/login/`, payload).subscribe({
+        next: (alumnoAutenticado) => {
+          // 1. Guardamos los datos completos estructurados para el perfil
+          localStorage.setItem('usuario_mindstep', JSON.stringify(alumnoAutenticado));
+          
+          // 2. Seteamos la sesión activa general
+          localStorage.setItem('session_active', JSON.stringify({ 
+            rol: 'usuario', 
+            id: alumnoAutenticado.id,
+            nombres: alumnoAutenticado.nombres,
+            correo: alumnoAutenticado.correo
+          }));
 
-      localStorage.setItem('session_active', JSON.stringify({ rol: 'especialista', nombres: medicoEncontrado ? medicoEncontrado.nombre : id }));
-      alert(`Portal Médico: Acceso concedido al ${medicoEncontrado ? medicoEncontrado.nombre : id}`);
-      this.cerrarModal();
-      this.router.navigate(['/']); // Regresa a la Home a ver el feed actualizado
+          this.cerrarModal();
+          
+          // 🚀 Navegación al perfil del alumno con recarga limpia
+          this.router.navigate(['/user-profile']).then(() => window.location.reload());
+        },
+        error: (err) => {
+          console.error('Error en autenticación de alumno:', err);
+          this.errorMensaje.set('Las credenciales de estudiante no son válidas o no existen.');
+        }
+      });
+
+    } else {
+      // 🩺 Flujo Especialista/Médico Optimizado con la Base de Datos
+      this.http.get<any[]>(`${this.apiUrl}/especialistas/`).subscribe({
+        next: (listaMedicos) => {
+          const medicoEncontrado = listaMedicos.find(m => 
+            m.username.toLowerCase().trim() === id.toLowerCase().trim() || 
+            m.correo.toLowerCase().trim() === id.toLowerCase().trim()
+          );
+
+          // Nota: Como los médicos se cargan desde el Admin de Django en tu backend,
+          // validamos la coincidencia del password en texto claro para tu demostración del MVP
+          if (medicoEncontrado && medicoEncontrado.password_hash === pass) {
+            localStorage.setItem('usuario_especialista', JSON.stringify(medicoEncontrado));
+            
+            localStorage.setItem('session_active', JSON.stringify({ 
+              rol: 'especialista', 
+              nombres: `${medicoEncontrado.nombres} ${medicoEncontrado.apellidos}` 
+            }));
+
+            this.cerrarModal();
+            this.router.navigate(['/dashboard-especialista']);
+          } else {
+            this.errorMensaje.set('Identificador médico o contraseña de red incorrectos.');
+          }
+        },
+        error: (err) => {
+          console.error('Error al consultar médicos de SQLite:', err);
+          this.errorMensaje.set('Hubo un problema de conexión con el servidor de salud.');
+        }
+      });
     }
   }
 }

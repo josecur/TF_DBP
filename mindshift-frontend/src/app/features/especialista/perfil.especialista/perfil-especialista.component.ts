@@ -1,39 +1,24 @@
 import { Component, signal, inject, OnInit } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { HttpClient, HttpClientModule } from '@angular/common/http'; 
 import { EspecialistaService } from '../registro-especialista/especialista.service'; 
-
-interface Especialista {
-  id?: number;
-  nombres: string;
-  apellidos: string;
-  especialidad: string;
-  descripcion_trayectoria: string;
-  universidad: string;
-  numero_colegiatura: string;
-  pais: string;
-  idiomas: string;
-  publico_objetivo: string;
-  enlace_agenda?: string;
-  avatar_icono: string;
-  fecha_registro?: string;
-}
 
 @Component({
   selector: 'app-perfil-especialista',
   standalone: true,
-  imports: [CommonModule, RouterModule, DatePipe],
+  imports: [CommonModule, RouterModule, HttpClientModule],
   templateUrl: './perfil-especialista.component.html',
   styleUrls: ['./perfil-especialista.component.css']
 })
 export class PerfilEspecialistaComponent implements OnInit {
   private route = inject(ActivatedRoute); 
   private especialistaService = inject(EspecialistaService); 
+  private http = inject(HttpClient); 
 
-  especialista = signal<Especialista | null>(null);
+  especialista = signal<any | null>(null);
 
   ngOnInit() {
-    // 🚀 Escuchamos el parámetro de forma asíncrona para asegurar la lectura del ID
     this.route.paramMap.subscribe(params => {
       const idParam = params.get('id');
       if (idParam) {
@@ -45,16 +30,43 @@ export class PerfilEspecialistaComponent implements OnInit {
   cargarDetalleEspecialista(id: number) {
     this.especialistaService.obtenerEspecialistas().subscribe({
       next: (lista: any[]) => {
-        // 🎯 CORRECCIÓN CLAVE: Usamos '==' para evitar conflictos string vs number del JSON
         const encontrado = lista.find(medico => medico.id == id);
-        
         if (encontrado) {
+          // Aseguramos que el objeto siempre contenga el arreglo de publicaciones para evitar fallos en el @for
+          if (!encontrado.publicaciones) {
+            encontrado.publicaciones = [];
+          }
           this.especialista.set(encontrado);
-        } else {
-          console.warn(`No se encontró ningún especialista en SQLite con el ID: ${id}`);
         }
       },
-      error: (err) => console.error('Error al recuperar detalle desde Django:', err)
+      error: (err) => console.error('Error al mapear doctor desde SQLite:', err)
+    });
+  }
+
+  solicitarConsulta() {
+    const datosAlumno = localStorage.getItem('usuario_mindstep');
+    if (!datosAlumno) {
+      alert('Debes iniciar sesión como estudiante para solicitar una consulta.');
+      return;
+    }
+    const alumno = JSON.parse(datosAlumno);
+
+    const payload = {
+      especialista: this.especialista()?.id, 
+      alumno_nombre: `${alumno.nombres} ${alumno.apellidos}`,
+      alumno_correo: alumno.correo,
+      motivo: `Derivación automática. El alumno presenta un nivel de carga mental estimado como ${alumno.nivelCargaMental || 'MODERADO'}.`,
+      estado: 'PENDIENTE'
+    };
+
+    this.http.post('http://localhost:8000/api/consultas/', payload).subscribe({
+      next: () => {
+        alert('¡Tu solicitud de consulta express fue enviada al especialista! Aparecerá en su panel al instante.');
+      },
+      error: (err) => {
+        console.error('Error al mandar cita:', err);
+        alert('No se pudo procesar la consulta en este momento.');
+      }
     });
   }
 }

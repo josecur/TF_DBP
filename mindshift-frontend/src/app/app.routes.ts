@@ -26,12 +26,17 @@ export const routes: Routes = [
     path: 'registro-especialista',
     loadComponent: () => import('./features/especialista/registro-especialista/registro-especialista.component').then(m => m.RegistroEspecialistaComponent)
   },
-  // 🎯 6. NUEVA RUTA DINÁMICA: Carga el perfil extendido (Corregido con su coma al final)
+  // 6. Perfil extendido del especialista (Público)
   {
     path: 'perfil-especialista/:id',
     loadComponent: () => import('./features/especialista/perfil.especialista/perfil-especialista.component').then(m => m.PerfilEspecialistaComponent)
-  }, // 👈 ¡ESTA COMA ERA VITAL!
-  // 7. Comodín de seguridad
+  },
+  // 🎯 7. NUEVA RUTA: Panel Privado del Especialista (Consola Médica)
+  {
+    path: 'dashboard-especialista',
+    loadComponent: () => import('./features/especialista/panel.especialista/panel-especialista.component').then(m => m.PanelEspecialistaComponent)
+  },
+  // 8. Comodín de seguridad (Siempre al final absoluto)
   {
     path: '**',
     redirectTo: ''

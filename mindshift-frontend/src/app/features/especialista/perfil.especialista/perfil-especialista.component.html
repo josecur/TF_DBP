@@ -16,10 +16,16 @@
         
         <div class="md:col-span-2 space-y-6">
           
+          <div class="text-left">
+            <a routerLink="/" class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-slate-500 hover:text-blue-700 transition-all select-none cursor-pointer bg-white border border-slate-200 px-4 py-2.5 rounded-xl shadow-sm">
+              <span>←</span> Regresar a la Lista
+            </a>
+          </div>
+          
           <div class="bg-white border border-slate-200/80 rounded-3xl p-6 md:p-8 shadow-sm flex flex-col sm:flex-row gap-6 items-center sm:items-start text-center sm:text-left relative overflow-hidden">
             
-            <div class="w-24 h-24 shrink-0 rounded-2xl bg-gradient-to-br from-blue-50 to-slate-100 border border-blue-100 flex items-center justify-center text-5xl shadow-sm relative">
-              {{ especialista()?.avatar_icono || '👨‍⚕️' }}
+            <div class="w-24 h-24 shrink-0 rounded-2xl bg-slate-100 border border-slate-200 overflow-hidden shadow-sm relative">
+              <img [src]="especialista()?.avatar_icono" alt="Foto del Especialista" class="w-full h-full object-cover">
               <span class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></span>
             </div>
 
@@ -34,7 +40,7 @@
                   </span>
                 </div>
                 <h1 class="text-3xl font-black text-slate-900 uppercase italic tracking-tight leading-tight pt-1">
-                  Dr. {{ especialista()?.nombres }} {{ especialista()?.apellidos }}
+                  Dr(a). {{ especialista()?.nombres }} {{ especialista()?.apellidos }}
                 </h1>
                 <p class="text-xs font-extrabold text-blue-700 uppercase tracking-widest">
                   Especialidad en {{ especialista()?.especialidad }}
@@ -68,16 +74,20 @@
             </h3>
             
             <div class="space-y-4 pt-2">
-              <div class="p-4 bg-slate-50 border border-slate-100 rounded-2xl space-y-2">
-                <div class="flex items-center justify-between text-[10px] text-slate-400 font-bold uppercase">
-                  <span>🧠 Gestión de Carga Mental</span>
-                  <span>Publicado Hoy</span>
+              @for (pub of especialista()?.publicaciones; track pub.id) {
+                <div class="p-4 bg-slate-50 border border-slate-100 rounded-2xl space-y-2">
+                  <div class="flex items-center justify-between text-[10px] text-slate-400 font-bold uppercase">
+                    <span>🧠 {{ pub.categoria }}</span>
+                    <span>{{ pub.fecha_publicacion | date:'dd/MM/yyyy' }}</span>
+                  </div>
+                  <h4 class="font-bold text-slate-900 text-sm">{{ pub.titulo }}</h4>
+                  <p class="text-xs text-slate-600 leading-relaxed font-medium whitespace-pre-line">{{ pub.contenido }}</p>
                 </div>
-                <h4 class="font-bold text-slate-900 text-sm">Estrategias operativas contra el Burnout Académico</h4>
-                <p class="text-xs text-slate-600 leading-relaxed font-medium">
-                  Abordar las distorsiones cognitivas a tiempo mediante micro-hábitos estructurados permite al cerebro universitario liberar el exceso de cortisol...
-                </p>
-              </div>
+              } @empty {
+                <div class="p-4 bg-slate-50 border border-slate-100 rounded-2xl text-center text-xs text-slate-400 font-medium">
+                  Este especialista no registra publicaciones científicas en su muro aún.
+                </div>
+              }
             </div>
           </div>
 
@@ -85,7 +95,7 @@
 
         <div class="space-y-6">
           
-          <div class="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-5 text-left relative">
+          <div class="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-5 text-left relative mt-[41px]">
             <div>
               <h3 class="font-black text-slate-900 text-[11px] uppercase tracking-widest text-slate-400">
                 Acreditación Institucional
@@ -116,19 +126,13 @@
             </div>
 
             <div class="pt-2">
-              <a [href]="especialista()?.enlace_agenda || 'https://wa.me/51986575756'" target="_blank" class="w-full py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-black rounded-xl text-xs uppercase tracking-widest block text-center transition-all shadow-md hover:scale-[1.01]">
-                📢 Generar Consulta Instantánea
-              </a>
+              <button (click)="solicitarConsulta()" class="w-full py-3 bg-slate-900 hover:bg-blue-700 text-white text-xs font-black rounded-xl uppercase tracking-wider transition-all shadow-sm">
+                ⚡ Solicitar Consulta Express (Vía MindStep)
+              </button>
               <p class="text-center text-[10px] text-slate-400 font-medium mt-3">
                 Canales oficiales protegidos por la red MindStep.
               </p>
             </div>
-          </div>
-
-          <div class="text-center">
-            <a routerLink="/" class="text-[10px] text-slate-400 font-black uppercase tracking-wider hover:text-blue-700 transition-all">
-              ✕ Cerrar Perfil Clínico
-            </a>
           </div>
 
         </div>

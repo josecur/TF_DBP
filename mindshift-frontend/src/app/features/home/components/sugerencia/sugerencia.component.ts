@@ -6,6 +6,6 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './sugerencia.component.html',
-  styleUrls: ['./sugerencia.component.css'] // Enlace al CSS separado
+  styleUrls: ['./sugerencia.component.css']
 })
 export class AppSugerenciaComponent {}

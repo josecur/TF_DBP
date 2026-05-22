@@ -1,7 +1,8 @@
-import { Component, computed, signal, inject, output } from '@angular/core'; // 👈 Importamos output
+import { Component, computed, signal, inject, OnInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 
 interface Pregunta {
   id: number;
@@ -10,43 +11,53 @@ interface Pregunta {
 }
 
 export interface IntentoCuestionario {
-  fecha: string;
-  nivelCargaMental: 'BAJO' | 'MODERADO' | 'CRITICO';
-  respuestas: Record<number, number>;
+  id?: number;
+  alumno_usuario?: number;
+  usuario_nombre: string;
+  puntuacion_total: number;
+  distorsion_predominante: string;
+  nivel_carga_calculado: 'BAJO' | 'MODERADO' | 'CRITICO';
+  fecha_evaluacion?: string;
 }
 
 export interface PerfilUsuario {
-  id: string;
+  id: string | number;
   nombres: string;
   apellidos: string;
   correo: string;
-  telefono: string;
-  ocupacion: string;
-  sector: string;
-  modalidad: string;
+  telefono?: string;
+  codigo_identificacion?: string;
+  carrera?: string;
   nivelCargaMental: 'BAJO' | 'MODERADO' | 'CRITICO';
-  historial: IntentoCuestionario[];
+  historial?: IntentoCuestionario[];
 }
 
 @Component({
   selector: 'app-cuestionario',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule, HttpClientModule],
   templateUrl: './cuestionario.component.html',
   styleUrls: ['./cuestionario.component.css']
 })
-export class CuestionarioComponent {
-  
+export class CuestionarioComponent implements OnInit {
   private router = inject(Router);
+  private http = inject(HttpClient);
+  private apiUrl = 'http://localhost:8000/api/alumnos/';
+  private apiTestUrl = 'http://localhost:8000/api/historial-tests/';
 
-  // 🚀 EVENTO DE SALIDA: Le avisa a la Home que hay un cambio en el usuario logueado
-  actualizarHome = output<PerfilUsuario>();
+  // 🎯 COMUNICACIÓN DE EVENTOS FORMAL CON EL HOME
+  @Output() actualizarHome = new EventEmitter<PerfilUsuario>();
+
+  usuarioLogueado = signal<any | null>(null);
+  modoReevaluacion = signal<boolean>(false);
+  mostrarModalLogin = signal<boolean>(false);
+  mostrarModal = signal<boolean>(false);
 
   preguntas = signal<Pregunta[]>([
-    { id: 1, texto: '¿Sueles anticipar el peor resultado posible ante una situación de incertidumbre diaria o laboral?', dimension: 'Catastrofismo' },
+    { id: 1, texto: '¿Sueles anticipar el peor resultado posible ante una situación de incertidumbre diaria o en tus estudios?', dimension: 'Catastrofismo' },
     { id: 2, texto: '¿Consideras que si no alcanzas el estándar máximo en una meta, todo tu esfuerzo es un fracaso total?', dimension: 'Pensamiento Polarizado' },
     { id: 3, texto: '¿Tiendes a asumir que tu entorno piensa negativamente de ti sin tener pruebas reales?', dimension: 'Lectura de Pensamiento' },
-    { id: 4, texto: '¿Sientes que un pequeño contratiempo define por completo tu capacidad personal o profesional?', dimension: 'Sobregeneralización' }
+    { id: 4, texto: '¿Sientes que un pequeño contratiempo define por completo tu capacidad personal o académica?', dimension: 'Sobregeneralización' }
   ]);
 
   indiceActual = signal<number>(0);
@@ -55,12 +66,14 @@ export class CuestionarioComponent {
   estadoFlujo = signal<'QUIZ' | 'AUTH' | 'RESULTADOS'>('QUIZ');
   modoAuth = signal<'LOGIN' | 'REGISTER'>('LOGIN');
   verPassword = signal<boolean>(false);
+  errorMensaje = signal<string | null>(null);
 
   txtNombre = signal<string>('');
   txtApellido = signal<string>('');
   txtTelefono = signal<string>('');
   txtCorreo = signal<string>('');
   txtPassword = signal<string>('');
+  txtCodigo = signal<string>(''); 
 
   preguntaActual = computed(() => this.preguntas()[this.indiceActual()]);
   progreso = computed(() => Math.round(((this.indiceActual() + 1) / this.preguntas().length) * 100));
@@ -72,11 +85,16 @@ export class CuestionarioComponent {
     } else {
       return this.txtNombre().trim() !== '' && 
              this.txtApellido().trim() !== '' && 
-             this.txtTelefono().trim() !== '' && 
              this.txtCorreo().trim() !== '' && 
-             this.txtPassword().trim() !== '';
+             this.txtPassword().trim() !== '' &&
+             this.txtCodigo().trim() !== '';
     }
   });
+
+  ngOnInit() {
+    const active = localStorage.getItem('session_active');
+    if (active) this.usuarioLogueado.set(JSON.parse(active));
+  }
 
   seleccionarOpcion(puntaje: number) {
     const idPregunta = this.preguntaActual().id;
@@ -85,9 +103,9 @@ export class CuestionarioComponent {
     if (!this.esUltimaPregunta()) {
       this.indiceActual.update(idx => idx + 1);
     } else {
-      const datosPrevios = localStorage.getItem('usuario_mindstep');
-      if (datosPrevios) {
-        this.ejecutarAutenticacion();
+      const activeSession = localStorage.getItem('session_active');
+      if (activeSession) {
+        this.guardarTestDirecto(JSON.parse(activeSession).id, JSON.parse(activeSession).nombres);
       } else {
         this.estadoFlujo.set('AUTH'); 
       }
@@ -107,55 +125,111 @@ export class CuestionarioComponent {
     this.txtTelefono.set('');
     this.txtCorreo.set('');
     this.txtPassword.set('');
+    this.txtCodigo.set('');
+    this.errorMensaje.set(null);
   }
 
   toggleVisibilidadPassword() {
     this.verPassword.update(v => !v);
   }
 
+  abrirLogin() { this.mostrarModalLogin.set(true); }
+  cerrarLogin() { this.mostrarModalLogin.set(false); }
+  activarReevaluacion() { this.modoReevaluacion.set(true); }
+  cancelarReevaluacion() { this.modoReevaluacion.set(false); }
+
   ejecutarAutenticacion() {
-    const datosPrevios = localStorage.getItem('usuario_mindstep');
-    let usuarioActual: PerfilUsuario | null = datosPrevios ? JSON.parse(datosPrevios) : null;
+    this.errorMensaje.set(null);
+    const modo = this.modoAuth();
 
-    const niveles: ('BAJO' | 'MODERADO' | 'CRITICO')[] = ['BAJO', 'MODERADO', 'CRITICO'];
-    const nivelCalculado = niveles[Math.floor(Math.random() * 3)];
+    let sumaPuntajes = 0;
+    Object.values(this.respuestas()).forEach(val => sumaPuntajes += val);
+    
+    let nivelCalculado: 'BAJO' | 'MODERADO' | 'CRITICO' = 'BAJO';
+    if (sumaPuntajes >= 4 && sumaPuntajes <= 6) nivelCalculado = 'MODERADO';
+    if (sumaPuntajes > 6) nivelCalculado = 'CRITICO';
 
-    const nuevoIntento: IntentoCuestionario = {
-      fecha: new Date().toLocaleDateString('es-PE', { 
-        day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' 
-      }),
-      nivelCargaMental: nivelCalculado,
-      respuestas: this.respuestas()
+    const distorsionPredominante = this.preguntas()[Math.floor(Math.random() * this.preguntas().length)].dimension;
+
+    if (modo === 'LOGIN') {
+      const payloadLogin = { correo: this.txtCorreo().trim(), password: this.txtPassword().trim() };
+      
+      this.http.post<any>(`${this.apiUrl}login/`, payloadLogin).subscribe({
+        next: (alumno) => {
+          this.registrarIntentoTest(alumno.id, `${alumno.nombres} ${alumno.apellidos}`, sumaPuntajes, distorsionPredominante, nivelCalculado);
+        },
+        error: () => this.errorMensaje.set('Credenciales inválidas. Verifica tu correo o contraseña.')
+      });
+
+    } else {
+      const payloadRegister = {
+        username: this.txtCorreo().trim().split('@')[0],
+        password_hash: this.txtPassword().trim(),
+        correo: this.txtCorreo().trim(),
+        nombres: this.txtNombre().trim(),
+        apellidos: this.txtApellido().trim(),
+        codigo_identificacion: this.txtCodigo().trim(),
+        carrera: 'Escolar',
+        telefono: this.txtTelefono().trim(),
+        ultimo_nivel_carga: nivelCalculado
+      };
+
+      this.http.post<any>(this.apiUrl, payloadRegister).subscribe({
+        next: (nuevoAlumno) => {
+          this.registrarIntentoTest(nuevoAlumno.id, `${nuevoAlumno.nombres} ${nuevoAlumno.apellidos}`, sumaPuntajes, distorsionPredominante, nivelCalculado);
+        },
+        error: () => this.errorMensaje.set('Error al registrar cuenta. El código o correo ya existen.')
+      });
+    }
+  }
+
+  private registrarIntentoTest(alumnoId: number, nombreCompleto: string, puntos: number, distorsion: string, nivel: 'BAJO' | 'MODERADO' | 'CRITICO') {
+    const payloadTest = {
+      alumno_usuario: alumnoId,
+      usuario_nombre: nombreCompleto,
+      puntuacion_total: puntos,
+      distorsion_predominante: distorsion,
+      nivel_carga_calculado: nivel
     };
 
-    if (usuarioActual) {
-      if (!usuarioActual.historial) usuarioActual.historial = [];
-      usuarioActual.historial.push(nuevoIntento);
-      usuarioActual.nivelCargaMental = nivelCalculado;
-    } else {
-      usuarioActual = {
-        id: 'MND-' + Math.floor(Math.random() * 900000 + 100000),
-        nombres: this.txtNombre() || 'Usuario',
-        apellidos: this.txtApellido() || 'MindStep',
-        correo: this.txtCorreo(),
-        telefono: this.txtTelefono(),
-        ocupacion: 'PROFESIONAL / INDEPENDIENTE', 
-        sector: 'SERVICIOS Y PRODUCTIVIDAD',
-        modalidad: 'HÍBRIDO',
-        nivelCargaMental: nivelCalculado,
-        historial: [nuevoIntento]
-      };
-    }
+    this.http.post<any>(this.apiTestUrl, payloadTest).subscribe({
+      next: () => {
+        const perfilCompleto: PerfilUsuario = {
+          id: alumnoId,
+          nombres: nombreCompleto.split(' ')[0],
+          apellidos: nombreCompleto.split(' ').slice(1).join(' '),
+          correo: this.txtCorreo().trim(),
+          telefono: this.txtTelefono().trim(),
+          nivelCargaMental: nivel,
+          historial: [payloadTest]
+        };
 
-    localStorage.setItem('usuario_mindstep', JSON.stringify(usuarioActual));
+        // Guardamos los estados relacionales en local
+        localStorage.setItem('session_active', JSON.stringify({ rol: 'usuario', id: alumnoId, nombres: nombreCompleto }));
+        localStorage.setItem('usuario_mindstep', JSON.stringify(perfilCompleto));
+        
+        // 🎯 DISPARADOR EN CADENA: Avisa al Home que ya hay usuario y datos listos
+        this.actualizarHome.emit(perfilCompleto);
 
-    // 🚀 AQUÍ ESTÁ EL TRUCO: Emitimos el usuario a la Home de manera reactiva limpia
-    this.actualizarHome.emit(usuarioActual);
+        // Cambiamos el flujo local de manera limpia sin recargar
+        this.estadoFlujo.set('RESULTADOS'); 
+        this.indiceActual.set(0);
+      },
+      error: () => this.errorMensaje.set('Error al registrar tus respuestas en el screening.')
+    });
+  }
 
-    // Cambiamos el estado local para pintar el resultado de una vez
-    this.estadoFlujo.set('RESULTADOS'); 
-    
-    // Reseteamos el índice por si quieren repetir el test luego
-    this.indiceActual.set(0);
+  private guardarTestDirecto(alumnoId: number, nombreCompleto: string) {
+    let sumaPuntajes = 0;
+    Object.values(this.respuestas()).forEach(val => sumaPuntajes += val);
+    let nivelCalculado: 'BAJO' | 'MODERADO' | 'CRITICO' = 'BAJO';
+    if (sumaPuntajes >= 4 && sumaPuntajes <= 6) nivelCalculado = 'MODERADO';
+    if (sumaPuntajes > 6) nivelCalculado = 'CRITICO';
+    this.registrarIntentoTest(alumnoId, nombreCompleto, sumaPuntajes, 'Pensamiento Autocrítico', nivelCalculado);
+  }
+
+  cerrarSesionDesdeNavbar() {
+    localStorage.clear();
+    this.router.navigate(['/']).then(() => window.location.reload());
   }
 }

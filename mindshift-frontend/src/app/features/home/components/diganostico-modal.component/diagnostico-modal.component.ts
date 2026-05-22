@@ -10,9 +10,7 @@ import { PerfilUsuario } from '../../../cuestionario/cuestionario.component';
   styleUrls: ['./diagnostico-modal.component.css']
 })
 export class DiagnosticoModalComponent {
-  // Recibe la estructura compleja de datos de forma segura
   @Input() usuario: PerfilUsuario | null = null;
-  
   @Output() cerrar = new EventEmitter<void>();
 
   cerrarModal() {

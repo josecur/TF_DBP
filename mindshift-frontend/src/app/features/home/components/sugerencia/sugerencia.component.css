@@ -1,13 +1,56 @@
-/* Animación de flotado sutil y profesional */
-.animacion-flotante-sutil {
-  animation: flotarCorporativo 4s ease-in-out infinite;
+/* ==========================================================================
+   🤖 MINDSTEP CORE ANIMATIONS (LAPTOP SCREEN TRANSITION)
+   ========================================================================== */
+
+/**
+ * Animación de desvanecimiento cruzado (Crossfade)
+ * Intercala la opacidad y el orden de capas (z-index) para que las pantallas
+ * con código y gráficos de la laptop cambien cíclicamente de forma fluida.
+ */
+@keyframes screenFade {
+  0%, 40% {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1) translateY(0);
+  }
+  45%, 95% {
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.98) translateY(2px); /* Efecto de salida sutil */
+  }
+  100% {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1) translateY(0);
+  }
 }
 
-@keyframes flotarCorporativo {
+/* Primera pantalla (System Monitor) */
+.animate-screen-1 {
+  animation: screenFade 12s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: opacity, transform;
+}
+
+/* Segunda pantalla (TypeScript Code) con retraso exacto de 6 segundos */
+.animate-screen-2 {
+  animation: screenFade 12s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation-delay: 6s;
+  will-change: opacity, transform;
+}
+
+/**
+ * Animación flotante para la laptop (Efecto tridimensional de hardware)
+ */
+@keyframes laptopFloat {
   0%, 100% {
-    transform: translateY(0);
+    transform: translateY(0px);
   }
   50% {
-    transform: translateY(-10px); /* Un movimiento corto que denota fluidez y estilo */
+    transform: translateY(-6px);
   }
+}
+
+.animacion-laptop {
+  animation: laptopFloat 6s ease-in-out infinite;
+  will-change: transform;
 }

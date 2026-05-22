@@ -1,100 +1,161 @@
-import { Component, OnInit, signal, computed, effect } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms'; // 🚀 Importado para que funcionen los inputs de edición
+import { HttpClient } from '@angular/common/http'; // 🎯 INYECTADO PARA EL BORRADO EN DJANGO
 import { PerfilUsuario } from '../cuestionario/cuestionario.component';
 
+import { TestComponent } from './test/test.component';
+import { ConsultaComponent } from './components/consulta.component';
+ 
 @Component({
   selector: 'app-user-profile',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule], // 👈 Agregado FormsModule aquí
+  imports: [CommonModule, FormsModule, RouterModule, TestComponent, ConsultaComponent],
   templateUrl: './user-profile.component.html',
   styleUrls: ['./user-profile.component.css']
 })
 export class UserProfileComponent implements OnInit {
-  
+  private router = inject(Router);
+  private http = inject(HttpClient); // 🎯 INYECTADO PARA EL BORRADO FÍSICO
+
   usuarioLogueado = signal<PerfilUsuario | null>(null);
-  editando = signal<boolean>(false);
 
-  // Variables auxiliares amarradas al formulario de edición
-  formNombres = '';
-  formApellidos = '';
+  // SIGNALS DE APERTURA Y CONTROL PARA LOS MODALES DE "VER MÁS"
+  mostrarTestPopup = signal<boolean>(false);
+  mostrarCitaPopup = signal<boolean>(false);
+  testSeleccionado = signal<any | null>(null);
+  citaSeleccionada = signal<any | null>(null);
+
+  // Campos vinculados a la directiva de doble vía [(ngModel)]
+  formNombre = '';
+  formApellido = '';
   formTelefono = '';
-  formSector = '';
-  formModalidad = '';
-
-  // Variables operativas de micro-hábitos
-  pausasCompletadas = signal<number>(0);
-  pausasObjetivo = signal<number>(4);
-  minutosEnfoque = signal<number>(0);
-
-  porcentajeProgreso = computed(() => {
-    if (this.pausasObjetivo() === 0) return 0;
-    const calculo = Math.round((this.pausasCompletadas() / this.pausasObjetivo()) * 100);
-    return calculo > 100 ? 100 : calculo;
-  });
-
-  constructor(private router: Router) {
-    effect(() => {
-      localStorage.setItem('mindstep_pausas', this.pausasCompletadas().toString());
-    });
-    effect(() => {
-      localStorage.setItem('mindstep_enfoque', this.minutosEnfoque().toString());
-    });
-  }
+  formCarrera = 'Escolar'; 
 
   ngOnInit() {
-    const datosGuardados = localStorage.getItem('usuario_mindstep');
-    if (datosGuardados) {
-      const usuario = JSON.parse(datosGuardados);
-      this.usuarioLogueado.set(usuario);
-      
-      // Inicializamos los inputs del formulario con los valores reales guardados
-      this.formNombres = usuario.nombres;
-      this.formApellidos = usuario.apellidos;
-      this.formTelefono = usuario.telefono;
-      this.formSector = usuario.sector || 'TECNOLOGÍA Y SOFTWARE';
-      this.formModalidad = usuario.modalidad || 'HÍBRIDO';
+    this.cargarDatosUsuario();
+  }
 
-      const pausasPrevias = localStorage.getItem('mindstep_pausas');
-      const enfoquePrevio = localStorage.getItem('mindstep_enfoque');
-      if (pausasPrevias) this.pausasCompletadas.set(parseInt(pausasPrevias, 10));
-      if (enfoquePrevio) this.minutosEnfoque.set(parseInt(enfoquePrevio, 10));
+  cargarDatosUsuario() {
+    const activeSession = localStorage.getItem('session_active');
+    const uData = localStorage.getItem('usuario_mindstep');
+
+    if (activeSession && uData) {
+      const datosCompletos = JSON.parse(uData);
+      this.usuarioLogueado.set(datosCompletos);
+
+      // Limpieza de data sucia: Aísla el nombre por si se concatenaron apellidos por error
+      const nombreLimpio = datosCompletos.nombres ? datosCompletos.nombres.split(' ')[0] : '';
+      const apellidoLimpio = datosCompletos.apellidos || (datosCompletos.nombres ? datosCompletos.nombres.split(' ').slice(1).join(' ') : '');
+
+      this.formNombre = nombreLimpio;
+      this.formApellido = apellidoLimpio;
+      this.formTelefono = datosCompletos.telefono || '';
+      this.formCarrera = datosCompletos.carrera || 'Escolar';
+    } else {
+      this.router.navigate(['/']);
     }
   }
 
-  // 🚀 FUNCIÓN NUEVA: Guarda los datos editados por el usuario manteniendo su historial intacto
-  guardarCambiosPerfil() {
+  // 🎯 DISPARADORES REACTIVOS: Pasan el objeto real seleccionado al popup hijo
+  abrirTest(intento: any) {
+    if (intento) {
+      this.testSeleccionado.set(intento);
+    } else {
+      const usuario = this.usuarioLogueado();
+      if (usuario && usuario.historial && usuario.historial.length > 0) {
+        this.testSeleccionado.set(usuario.historial[usuario.historial.length - 1]);
+      } else {
+        // Objeto de respaldo con el tipado estricto si es la primera cuenta registrada
+        this.testSeleccionado.set({ 
+          id: 1, 
+          puntuacion_total: usuario?.historial?.[0]?.puntuacion_total || 5, 
+          nivel_carga_calculado: usuario?.nivelCargaMental || 'MODERADO', 
+          distorsion_predominante: 'Pensamiento Autocrítico',
+          fecha_evaluacion: 'Reciente' 
+        });
+      }
+    }
+    this.mostrarTestPopup.set(true);
+  }
+
+  cerrarTest() {
+    this.mostrarTestPopup.set(false);
+    this.testSeleccionado.set(null);
+  }
+
+  abrirCita() {
+    this.citaSeleccionada.set({
+      motivo: 'Carga mental elevada por entregas continuas y bloqueos en el desarrollo de arquitectura.',
+      especialista: 'Mesa de Guardia General',
+      canal: 'Teleconsulta WhatsApp',
+      prioridad: 'Media Obligatoria'
+    });
+    this.mostrarCitaPopup.set(true);
+  }
+
+  cerrarCita() {
+    this.mostrarCitaPopup.set(false);
+    this.citaSeleccionada.set(null);
+  }
+
+  // 🎯 NUEVO MÉTODO: Se conecta con el DELETE de Django para purgar la fila en SQLite y el LocalStorage
+  eliminarIntentoTest(idTest: number | string, indice: number) {
+    if (!idTest) {
+      alert('No se puede eliminar un registro mock provisional.');
+      return;
+    }
+
+    const confirmar = confirm('¿Estás seguro de que deseas eliminar permanentemente este diagnóstico de tu historial?');
+    if (!confirmar) return;
+
+    const urlDelete = `http://localhost:8000/api/historial-tests/${idTest}/`;
+
+    this.http.delete(urlDelete).subscribe({
+      next: () => {
+        const usuarioActual = this.usuarioLogueado();
+        if (usuarioActual && usuarioActual.historial) {
+          // Removemos la fila borrada del arreglo reactivo en caliente
+          usuarioActual.historial.splice(indice, 1);
+          
+          // Sincronizamos la persistencia en caché local
+          localStorage.setItem('usuario_mindstep', JSON.stringify(usuarioActual));
+          this.usuarioLogueado.set({ ...usuarioActual });
+        }
+        alert('Diagnóstico clínico removido con éxito del historial.');
+      },
+      error: (err) => {
+        console.error('Error al conectar con SQLite para borrar:', err);
+        alert('Error de red al intentar eliminar el registro del servidor de Django.');
+      }
+    });
+  }
+
+  actualizarInformationPerfil() {
+    // Mantener compatibilidad si se llama con este nombre desde el template anterior
+    this.actualizarInformacionPerfil();
+  }
+
+  actualizarInformacionPerfil() {
     const usuario = this.usuarioLogueado();
-    if (usuario) {
-      usuario.nombres = this.formNombres;
-      usuario.apellidos = this.formApellidos;
-      usuario.telefono = this.formTelefono;
-      usuario.sector = this.formSector;
-      usuario.modalidad = this.formModalidad;
+    if (!usuario) return;
 
-      // Guardamos la estructura en la máquina
-      localStorage.setItem('usuario_mindstep', JSON.stringify(usuario));
-      this.usuarioLogueado.set({ ...usuario }); // Forzamos actualización reactiva
-      this.editando.set(false);
-      alert('¡Perfil corporativo actualizado con éxito!');
-    }
-  }
+    usuario.nombres = this.formNombre;
+    usuario.apellidos = this.formApellido;
+    usuario.telefono = this.formTelefono;
+    (usuario as any).carrera = this.formCarrera;
 
-  registrarPausaCompletada() {
-    if (this.pausasCompletadas() < this.pausasObjetivo()) {
-      this.pausasCompletadas.update(actual => actual + 1);
-    }
-  }
+    localStorage.setItem('usuario_mindstep', JSON.stringify(usuario));
+    localStorage.setItem('session_active', JSON.stringify({
+      rol: 'usuario',
+      id: usuario.id,
+      nombres: usuario.nombres,
+      apellidos: usuario.apellidos,
+      correo: usuario.correo
+    }));
 
-  agregarMinutosEnfoque(minutos: number) {
-    this.minutosEnfoque.update(actual => actual + minutos);
-  }
-
-  ejecutarCerrarSesion() {
-    localStorage.removeItem('usuario_mindstep');
-    localStorage.removeItem('mindstep_pausas');
-    localStorage.removeItem('mindstep_enfoque');
-    this.router.navigate(['/']);
+    this.usuarioLogueado.set({ ...usuario });
+    alert('¡Perfil actualizado con éxito en tu sesión de red!');
   }
 }

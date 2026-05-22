@@ -2,8 +2,9 @@ import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { EspecialistaService } from '../../../especialista/registro-especialista/especialista.service';
-interface Especialista {
-  id?: number; // 👈 Clave para la redirección
+
+export interface Especialista {
+  id?: number; 
   nombres: string;
   apellidos: string;
   especialidad: string;
@@ -22,7 +23,7 @@ interface Especialista {
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './panel.component.html',
-  styleUrls: ['./panel.component.css']
+  styleUrls: ['./panel.component.css'] // Asegúrate de que coincida con tu árbol de archivos
 })
 export class AppPanelComponent implements OnInit {
   private especialistaService = inject(EspecialistaService);
@@ -32,13 +33,14 @@ export class AppPanelComponent implements OnInit {
 
   ngOnInit() {
     this.especialistaService.obtenerEspecialistas().subscribe({
-      next: (data: any[]) => {
+      next: (data: Especialista[]) => {
         this.especialistas.set(data);
       },
       error: (err) => console.error('Error cargando datos de Django:', err)
     });
   }
 
+  // 📐 ESTILO DE DESPLAZAMIENTO: Ajustado a -314px por tarjeta para que el slider ruede perfecto
   estiloDesplazamiento = computed(() => {
     const pixeles = this.indiceActual() * -314;
     return `translateX(${pixeles}px)`;

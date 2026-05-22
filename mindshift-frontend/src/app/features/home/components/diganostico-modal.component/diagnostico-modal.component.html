@@ -2,7 +2,7 @@
   
   <div class="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-6 md:p-8 shadow-2xl space-y-6 animate-in zoom-in-95 duration-300 relative text-left">
     
-    <button (click)="cerrarModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600 font-bold transition-colors text-lg">
+    <button (click)="cerrarModal()" class="absolute right-4 top-4 text-slate-400 hover:text-slate-600 font-bold transition-colors text-lg cursor-pointer">
       ✕
     </button>
 
@@ -18,32 +18,55 @@
       </div>
     </div>
 
+    <div class="p-4 rounded-xl border flex items-center justify-between"
+         [ngClass]="{
+           'bg-green-50 border-green-200 text-green-800': usuario?.nivelCargaMental === 'BAJO',
+           'bg-yellow-50 border-yellow-200 text-yellow-800': usuario?.nivelCargaMental === 'MODERADO',
+           'bg-red-50 border-red-200 text-red-800': usuario?.nivelCargaMental === 'CRITICO'
+         }">
+      <div class="text-xs">
+        <span class="block font-bold uppercase tracking-wider text-[10px] opacity-70">Diagnóstico para {{ usuario?.nombres }}</span>
+        <p class="text-sm font-black mt-0.5">Nivel de Carga Detectado: {{ usuario?.nivelCargaMental }}</p>
+      </div>
+      <span class="text-xl">
+        @if (usuario?.nivelCargaMental === 'BAJO') { 🌱 }
+        @if (usuario?.nivelCargaMental === 'MODERADO') { ⚡ }
+        @if (usuario?.nivelCargaMental === 'CRITICO') { 🚨 }
+      </span>
+    </div>
+
     <div class="space-y-2">
       <p class="text-slate-600 text-sm leading-relaxed font-medium">
-        Tus vectores de respuesta indican indicadores de **estrés académico estacional moderado**, frecuentemente vinculados al desarrollo continuo de entregables de arquitectura y despliegues de software.
+        Tus vectores de respuesta procesados relacionalmente indican que presentas un patrón predominante de 
+        <span class="text-blue-700 font-bold">"{{ usuario?.historial?.[0]?.distorsion_predominante || 'Sobrecarga General' }}"</span>. 
+        Este estado suele manifestarse durante entregas críticas académicas o despliegues pesados de backend.
       </p>
     </div>
 
     <div class="border-t border-slate-100 w-full"></div>
 
     <div class="space-y-3">
-      <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Especialistas Sugeridos para tu caso:</span>
+      <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Especialista de Apoyo Sugerido:</span>
       
       <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-xl shrink-0">👨‍⚕️</div>
+          <div class="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-xl shrink-0">🩺</div>
           <div>
-            <h4 class="text-xs font-bold text-slate-900">Dr. Carlos Mendoza</h4>
-            <span class="text-[9px] font-bold text-blue-700 uppercase block tracking-wide">Gestión de Ansiedad Académica</span>
+            <h4 class="text-xs font-bold text-slate-900">
+              @if (usuario?.nivelCargaMental === 'CRITICO') { Dra. Gabriela Paz } @else { Dr. Carlos Mendoza }
+            </h4>
+            <span class="text-[9px] font-bold text-blue-700 uppercase block tracking-wide">
+              @if (usuario?.nivelCargaMental === 'CRITICO') { Soporte de Contención Prioritaria } @else { Gestión de Estrés Académico }
+            </span>
           </div>
         </div>
-        <button (click)="agendarConsulta()" class="px-3 py-1.5 bg-blue-700 hover:bg-blue-800 text-white text-[10px] font-bold rounded-md uppercase tracking-wider transition-colors shadow-sm">
+        <button (click)="agendarConsulta()" class="px-3 py-1.5 bg-blue-700 hover:bg-blue-800 text-white text-[10px] font-bold rounded-md uppercase tracking-wider transition-colors shadow-sm cursor-pointer">
           Agendar
         </button>
       </div>
     </div>
 
-    <button (click)="cerrarModal()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs uppercase tracking-wider transition-all border border-slate-200">
+    <button (click)="cerrarModal()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs uppercase tracking-wider transition-all border border-slate-200 cursor-pointer">
       Entendido, Ir a mi Panel de Control
     </button>
 
