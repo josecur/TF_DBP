@@ -1,0 +1,61 @@
+id,rama,ambito,pregunta
+1,ansiedad_social,redes_social,Subes una foto a redes sociales y notas que tiene muy pocas reacciones.
+2,ansiedad_social,redes_social,Envías un mensaje importante y pasan horas sin respuesta.
+3,ansiedad_social,redes_social,Tus amigos salen y no te invitan.
+4,ansiedad_social,redes_social,En una reunión hay un silencio incómodo después de que hablas.
+5,ansiedad_social,redes_social,Quieres comentar algo en redes pero dudas antes de publicar.
+6,ansiedad_social,academico_laboral,El profesor hace una pregunta y sabes la respuesta.
+7,ansiedad_social,academico_laboral,Debes exponer frente a la clase.
+8,ansiedad_social,academico_laboral,Tus compañeros forman grupos rápidamente.
+9,ansiedad_social,academico_laboral,Cometes un pequeño error en el trabajo o clase.
+10,ansiedad_social,academico_laboral,Debes pedir ayuda para entender algo.
+11,ansiedad_social,familiar_personal,En una reunión familiar comparan a los primos entre sí.
+12,ansiedad_social,familiar_personal,Un familiar hace un comentario sobre tu personalidad.
+13,ansiedad_social,familiar_personal,Te piden hablar frente a varios familiares.
+14,ansiedad_social,familiar_personal,Sientes que eres diferente al resto de tu familia.
+15,ansiedad_social,familiar_personal,Recibes una crítica pequeña en casa.
+16,tdah_burnout,redes_social,Entras a TikTok 5 minutos y pasan horas.
+17,tdah_burnout,redes_social,Lees un mensaje importante y olvidas responder.
+18,tdah_burnout,redes_social,Empiezas muchas conversaciones y no las continúas.
+19,tdah_burnout,redes_social,Quieres descansar pero sigues usando el celular sin parar.
+20,tdah_burnout,redes_social,Planeas hacer algo importante y terminas procrastinando.
+21,tdah_burnout,academico_laboral,Tienes una fecha límite importante acercándose.
+22,tdah_burnout,academico_laboral,Lees una explicación larga en clase.
+23,tdah_burnout,academico_laboral,Comienzas un proyecto difícil.
+24,tdah_burnout,academico_laboral,Tienes demasiadas tareas acumuladas.
+25,tdah_burnout,academico_laboral,Mientras haces una tarea importante aparece una distracción.
+26,tdah_burnout,familiar_personal,Olvidas hacer una tarea sencilla en casa.
+27,tdah_burnout,familiar_personal,Pierdes objetos importantes con frecuencia.
+28,tdah_burnout,familiar_personal,Empiezas a ordenar tu cuarto y terminas haciendo otra cosa.
+29,tdah_burnout,familiar_personal,Tu familia se molesta porque olvidaste algo importante.
+30,tdah_burnout,familiar_personal,Intentas seguir una rutina diaria.
+31,depresion_apatia,redes_social,Tus amigos te invitan a salir.
+32,depresion_apatia,redes_social,Ves publicaciones de personas siendo productivas.
+33,depresion_apatia,redes_social,Recibes mensajes de amigos.
+34,depresion_apatia,redes_social,Cancelas planes a último momento.
+35,depresion_apatia,redes_social,Pasas mucho tiempo viendo redes sin hacer nada.
+36,depresion_apatia,academico_laboral,Debes levantarte para ir a clases o trabajar.
+37,depresion_apatia,academico_laboral,Tienes muchos trabajos pendientes.
+38,depresion_apatia,academico_laboral,Piensas en tu futuro profesional.
+39,depresion_apatia,academico_laboral,Cometes un error pequeño.
+40,depresion_apatia,academico_laboral,Debes hacer una actividad importante.
+41,depresion_apatia,familiar_personal,Tu cuarto está desordenado desde hace días.
+42,depresion_apatia,familiar_personal,Tu familia intenta conversar contigo.
+43,depresion_apatia,familiar_personal,Piensas en actividades que antes disfrutabas.
+44,depresion_apatia,familiar_personal,Pasas el fin de semana en casa.
+45,depresion_apatia,familiar_personal,Descuidas hábitos personales básicos.
+46,perfeccionismo,redes_social,Subes una publicación y no obtiene muchas reacciones.
+47,perfeccionismo,redes_social,Ves influencers o personas perfectas en redes.
+48,perfeccionismo,redes_social,Publicas una foto y revisas constantemente las reacciones.
+49,perfeccionismo,redes_social,Comparas tus logros con los de otros.
+50,perfeccionismo,redes_social,Cometes un pequeño error frente a otros.
+51,perfeccionismo,academico_laboral,Obtienes 18/20 en un examen.
+52,perfeccionismo,academico_laboral,Debes entregar un proyecto.
+53,perfeccionismo,academico_laboral,Ves compañeros avanzando más rápido.
+54,perfeccionismo,academico_laboral,Piensas en postular a una oportunidad laboral.
+55,perfeccionismo,academico_laboral,Recibes una crítica constructiva.
+56,perfeccionismo,familiar_personal,Tu familia espera mucho de ti.
+57,perfeccionismo,familiar_personal,Rompes una rutina o dieta que estabas siguiendo.
+58,perfeccionismo,familiar_personal,Piensas en tus errores pasados.
+59,perfeccionismo,familiar_personal,No logras hacer algo exactamente como planeabas.
+60,perfeccionismo,familiar_personal,Te comparan con alguien más exitoso.
