@@ -2,12 +2,12 @@ import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { HttpClient } from '@angular/common/http'; // 🎯 INYECTADO PARA EL BORRADO EN DJANGO
-import { PerfilUsuario } from '../cuestionario/cuestionario.component';
-
+import { HttpClient } from '@angular/common/http';
+import { PerfilUsuario } from '../../core/models/perfil-usuario.models';
 import { TestComponent } from './test/test.component';
 import { ConsultaComponent } from './components/consulta.component';
- 
+import { ReservaService } from '../../core/services/reserva.service'; 
+
 @Component({
   selector: 'app-user-profile',
   standalone: true,
@@ -17,24 +17,39 @@ import { ConsultaComponent } from './components/consulta.component';
 })
 export class UserProfileComponent implements OnInit {
   private router = inject(Router);
-  private http = inject(HttpClient); // 🎯 INYECTADO PARA EL BORRADO FÍSICO
+  private http   = inject(HttpClient);
+  private reservaService = inject(ReservaService);
 
-  usuarioLogueado = signal<PerfilUsuario | null>(null);
-
-  // SIGNALS DE APERTURA Y CONTROL PARA LOS MODALES DE "VER MÁS"
+  // Señales únicas
+  misReservas = signal<any[]>([]);
+  usuarioLogueado  = signal<PerfilUsuario | null>(null);
   mostrarTestPopup = signal<boolean>(false);
   mostrarCitaPopup = signal<boolean>(false);
+  
+  // Usaremos 'citaParaRevisar' para el modal de contacto y detalles
+  citaParaRevisar = signal<any | null>(null);
   testSeleccionado = signal<any | null>(null);
-  citaSeleccionada = signal<any | null>(null);
 
-  // Campos vinculados a la directiva de doble vía [(ngModel)]
-  formNombre = '';
-  formApellido = '';
+  formNombre   = '';
+  formApellido = ''; 
   formTelefono = '';
-  formCarrera = 'Escolar'; 
 
-  ngOnInit() {
-    this.cargarDatosUsuario();
+ngOnInit() {
+  this.cargarDatosUsuario();
+  this.cargarMisReservas(); // <-- Si esto se llama en otro sitio (como un constructor o un setter), se duplica
+}
+
+  cargarMisReservas() {
+    const sesionStr = localStorage.getItem('session_active');
+    if (sesionStr) {
+      const sesion = JSON.parse(sesionStr);
+      if (sesion?.id) {
+        this.reservaService.obtenerReservasPorUsuario(sesion.id).subscribe({
+          next: (data: any[]) => this.misReservas.set(data),
+          error: (err: any) => console.error("Error cargando reservas:", err)
+        });
+      }
+    }
   }
 
   cargarDatosUsuario() {
@@ -44,38 +59,20 @@ export class UserProfileComponent implements OnInit {
     if (activeSession && uData) {
       const datosCompletos = JSON.parse(uData);
       this.usuarioLogueado.set(datosCompletos);
-
-      // Limpieza de data sucia: Aísla el nombre por si se concatenaron apellidos por error
-      const nombreLimpio = datosCompletos.nombres ? datosCompletos.nombres.split(' ')[0] : '';
-      const apellidoLimpio = datosCompletos.apellidos || (datosCompletos.nombres ? datosCompletos.nombres.split(' ').slice(1).join(' ') : '');
-
-      this.formNombre = nombreLimpio;
-      this.formApellido = apellidoLimpio;
-      this.formTelefono = datosCompletos.telefono || '';
-      this.formCarrera = datosCompletos.carrera || 'Escolar';
+      this.formNombre = datosCompletos.nombres || datosCompletos.nombreUsuario || '';
+      this.formApellido = datosCompletos.apellido || datosCompletos.apellidoUsuario || '';
+      this.formTelefono = datosCompletos.telefono || datosCompletos.telefonoUsuario || '';
     } else {
       this.router.navigate(['/']);
     }
   }
 
-  // 🎯 DISPARADORES REACTIVOS: Pasan el objeto real seleccionado al popup hijo
+  // Lógica para Tests
   abrirTest(intento: any) {
     if (intento) {
       this.testSeleccionado.set(intento);
     } else {
-      const usuario = this.usuarioLogueado();
-      if (usuario && usuario.historial && usuario.historial.length > 0) {
-        this.testSeleccionado.set(usuario.historial[usuario.historial.length - 1]);
-      } else {
-        // Objeto de respaldo con el tipado estricto si es la primera cuenta registrada
-        this.testSeleccionado.set({ 
-          id: 1, 
-          puntuacion_total: usuario?.historial?.[0]?.puntuacion_total || 5, 
-          nivel_carga_calculado: usuario?.nivelCargaMental || 'MODERADO', 
-          distorsion_predominante: 'Pensamiento Autocrítico',
-          fecha_evaluacion: 'Reciente' 
-        });
-      }
+      this.testSeleccionado.set({ id: 1, puntuacion_total: 0, nivel_carga_calculado: 'SIN DATOS', fecha_evaluacion: 'N/A' });
     }
     this.mostrarTestPopup.set(true);
   }
@@ -85,77 +82,38 @@ export class UserProfileComponent implements OnInit {
     this.testSeleccionado.set(null);
   }
 
-  abrirCita() {
-    this.citaSeleccionada.set({
-      motivo: 'Carga mental elevada por entregas continuas y bloqueos en el desarrollo de arquitectura.',
-      especialista: 'Mesa de Guardia General',
-      canal: 'Teleconsulta WhatsApp',
-      prioridad: 'Media Obligatoria'
-    });
-    this.mostrarCitaPopup.set(true);
+  // Lógica para Contacto y Detalles (Modal Unificado)
+  abrirModalContacto(reserva: any) {
+    this.citaParaRevisar.set(reserva);
   }
 
-  cerrarCita() {
-    this.mostrarCitaPopup.set(false);
-    this.citaSeleccionada.set(null);
-  }
+cerrarCita() {
+  this.citaParaRevisar.set(null); // Limpiamos la señal unificada
+}
 
-  // 🎯 NUEVO MÉTODO: Se conecta con el DELETE de Django para purgar la fila en SQLite y el LocalStorage
+  // Resto de métodos
   eliminarIntentoTest(idTest: number | string, indice: number) {
-    if (!idTest) {
-      alert('No se puede eliminar un registro mock provisional.');
-      return;
-    }
-
-    const confirmar = confirm('¿Estás seguro de que deseas eliminar permanentemente este diagnóstico de tu historial?');
-    if (!confirmar) return;
-
-    const urlDelete = `http://localhost:8000/api/historial-tests/${idTest}/`;
-
-    this.http.delete(urlDelete).subscribe({
+    if (!idTest || !confirm('¿Eliminar este diagnóstico?')) return;
+    this.http.delete(`http://localhost:8000/api/historial-tests/${idTest}/`).subscribe({
       next: () => {
         const usuarioActual = this.usuarioLogueado();
-        if (usuarioActual && usuarioActual.historial) {
-          // Removemos la fila borrada del arreglo reactivo en caliente
+        if (usuarioActual?.historial) {
           usuarioActual.historial.splice(indice, 1);
-          
-          // Sincronizamos la persistencia en caché local
           localStorage.setItem('usuario_mindstep', JSON.stringify(usuarioActual));
           this.usuarioLogueado.set({ ...usuarioActual });
         }
-        alert('Diagnóstico clínico removido con éxito del historial.');
-      },
-      error: (err) => {
-        console.error('Error al conectar con SQLite para borrar:', err);
-        alert('Error de red al intentar eliminar el registro del servidor de Django.');
       }
     });
-  }
-
-  actualizarInformationPerfil() {
-    // Mantener compatibilidad si se llama con este nombre desde el template anterior
-    this.actualizarInformacionPerfil();
   }
 
   actualizarInformacionPerfil() {
     const usuario = this.usuarioLogueado();
     if (!usuario) return;
-
-    usuario.nombres = this.formNombre;
-    usuario.apellidos = this.formApellido;
-    usuario.telefono = this.formTelefono;
-    (usuario as any).carrera = this.formCarrera;
-
-    localStorage.setItem('usuario_mindstep', JSON.stringify(usuario));
-    localStorage.setItem('session_active', JSON.stringify({
-      rol: 'usuario',
-      id: usuario.id,
-      nombres: usuario.nombres,
-      apellidos: usuario.apellidos,
-      correo: usuario.correo
-    }));
-
-    this.usuarioLogueado.set({ ...usuario });
-    alert('¡Perfil actualizado con éxito en tu sesión de red!');
+    const actualizado = { ...usuario, nombres: this.formNombre, apellido: this.formApellido, telefono: this.formTelefono };
+    localStorage.setItem('usuario_mindstep', JSON.stringify(actualizado));
+    this.usuarioLogueado.set(actualizado);
+    alert('Perfil actualizado correctamente.');
   }
+
+  
 }

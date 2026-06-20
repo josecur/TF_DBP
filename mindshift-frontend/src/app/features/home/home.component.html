@@ -1,13 +1,13 @@
 <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
   <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-    
+
     <div class="flex items-center gap-3">
-      <div class="w-7 h-7 bg-blue-700 rounded flex items-center justify-center font-bold text-white text-sm shadow-sm">
-        M
-      </div>
-      <span class="text-base font-bold tracking-tight text-slate-900 uppercase italic">Mind<span class="text-blue-700">Step</span></span>
+      <div class="w-7 h-7 bg-blue-700 rounded flex items-center justify-center font-bold text-white text-sm shadow-sm">M</div>
+      <span class="text-base font-bold tracking-tight text-slate-900 uppercase italic">
+        Mind<span class="text-blue-700">shift</span>
+      </span>
     </div>
-    
+
     <div class="hidden md:flex items-center gap-10 text-[11px] font-bold text-slate-600 uppercase tracking-widest">
       <a href="#pilares" class="hover:text-blue-700 transition-colors">Modelos</a>
       <a href="#test-section" class="hover:text-blue-700 transition-colors">Evaluación</a>
@@ -16,67 +16,68 @@
 
     @if (usuarioLogueado()) {
       <div class="flex items-center gap-3">
-        <a routerLink="/user-profile" class="border border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-700 px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-1.5 cursor-pointer select-none">
-          <span>Hola, {{ usuarioLogueado()?.nombres }}</span>
-        </a>
         
-        <button type="button" (click)="cerrarSesionDesdeNavbar()" class="border border-slate-200 bg-slate-100 hover:bg-red-50 hover:border-red-200 hover:text-red-600 text-slate-500 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all shadow-sm cursor-pointer select-none">
+        <a [routerLink]="usuarioLogueado()?.rol === 'especialista' ? '/dashboard-especialista' : '/user-profile'"
+           class="border border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-700 px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-2 cursor-pointer select-none">
+          
+          <span class="w-5 h-5 rounded-full bg-blue-700 text-white text-[10px] font-black flex items-center justify-center shadow-xs">
+            {{ usuarioLogueado()?.nombres?.charAt(0) | uppercase }}
+          </span>
+          
+          <span>
+            @if (usuarioLogueado()?.rol === 'especialista') {
+              Dr(a). {{ usuarioLogueado()?.nombres }}
+            } @else {
+              Hola, {{ usuarioLogueado()?.nombres }}
+            }
+          </span>
+        </a>
+
+        <button type="button" (click)="cerrarSesionDesdeNavbar()"
+                class="border border-slate-200 bg-slate-100 hover:bg-red-50 hover:border-red-200 hover:text-red-600 text-slate-500 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all shadow-sm cursor-pointer select-none">
           Salir
         </button>
       </div>
     } @else {
-      <button type="button" (click)="abrirLogin()" class="border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 px-5 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all shadow-sm cursor-pointer select-none">
+      <button type="button" (click)="abrirLogin()"
+              class="border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 px-5 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all shadow-sm cursor-pointer select-none">
         Iniciar Sesión
       </button>
     }
-    
+
   </div>
 </nav>
 
 <header class="relative pt-52 pb-32 overflow-hidden text-center px-4 bg-slate-50/40 border-b border-slate-100">
-  
   <div class="absolute inset-0 bg-[linear-gradient(to_right,#0f172a06_1px,transparent_1px),linear-gradient(to_bottom,#0f172a06_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none z-0"></div>
-  
+
   <div class="absolute top-12 left-12 w-24 h-24 border-t-2 border-l-2 border-slate-200/60 rounded-tl-2xl hidden lg:block pointer-events-none"></div>
   <div class="absolute top-12 right-12 w-24 h-24 border-t-2 border-r-2 border-slate-200/60 rounded-tr-2xl hidden lg:block pointer-events-none"></div>
 
-  <div class="absolute -top-20 left-1/4 w-[500px] h-[500px] bg-gradient-to-tr from-blue-400/10 to-cyan-400/10 blur-[120px] rounded-full pointer-events-none animate-[pulse_8s_ease-in-out_infinite] z-0"></div>
-  <div class="absolute -bottom-20 right-1/4 w-[500px] h-[500px] bg-gradient-to-br from-indigo-500/10 to-slate-400/5 blur-[120px] rounded-full pointer-events-none animate-[pulse_10s_ease-in-out_infinite_1s] z-0"></div>
-
-  <div class="absolute top-1/3 left-10 md:left-24 p-3 bg-white border border-slate-200/80 rounded-2xl shadow-xl shadow-slate-100/50 hidden sm:flex items-center gap-2 rotate-[-6deg] animate-bounce [animation-duration:5s] z-10 select-none">
-    <span class="text-blue-600 font-bold text-sm">🧠</span>
-    <span class="font-mono text-[10px] font-bold text-slate-500 uppercase tracking-wider">Mind_OK</span>
-  </div>
-  
-  <div class="absolute top-1/2 right-10 md:right-24 p-3 bg-white border border-slate-200/80 rounded-2xl shadow-xl shadow-slate-100/50 hidden sm:flex items-center gap-2 rotate-[8deg] animate-bounce [animation-duration:6s] z-10 select-none">
-    <span class="text-green-500 font-bold text-sm">✓</span>
-    <span class="font-mono text-[10px] font-bold text-slate-500 uppercase tracking-wider">Status: 200</span>
-  </div>
+  <div class="absolute -top-20 left-1/4 w-[500px] h-[500px] bg-gradient-to-tr from-blue-400/10 to-cyan-400/10 blur-[120px] rounded-full pointer-events-none z-0"></div>
+  <div class="absolute -bottom-20 right-1/4 w-[500px] h-[500px] bg-gradient-to-br from-indigo-500/10 to-slate-400/5 blur-[120px] rounded-full pointer-events-none z-0"></div>
 
   <div class="max-w-4xl mx-auto relative z-10 space-y-6">
-    
-    <div class="inline-flex items-center gap-3 px-4 py-1.5 bg-blue-50 border border-blue-200/70 text-blue-800 text-xs font-black uppercase tracking-[0.25em] rounded-full shadow-xs">
-      <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span> 
+    <div class="inline-flex items-center gap-3 px-4 py-1.5 bg-blue-50 border border-blue-200/70 text-blue-800 text-xs font-black uppercase tracking-[0.25em] rounded-full">
+      <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
       Bienestar y Rendimiento Personal
     </div>
-    
+
     <h1 class="text-4xl md:text-7xl font-black tracking-tight leading-none uppercase italic text-slate-900">
       Equilibrio Mental, <br>
       <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-blue-600 to-cyan-600">Éxito Absoluto.</span>
     </h1>
-    
-    <p class="text-base md:text-lg text-slate-600 font-medium max-w-2xl mx-auto leading-relaxed drop-shadow-xs">
-      Monitorea tus patrones de pensamiento, mitiga el estrés de la carga diaria y adopta micro-hábitos validados clínicamente para potenciar tu desarrollo personal y emocional.
+
+    <p class="text-base md:text-lg text-slate-600 font-medium max-w-2xl mx-auto leading-relaxed">
+      Monitorea tus patrones de pensamiento, mitiga el estrés de la carga diaria y adopta micro-hábitos validados clínicamente para potenciar tu desarrollo personal.
     </p>
-    
+
     <div class="flex justify-center pt-4">
-      <button onclick="document.getElementById('test-section').scrollIntoView({behavior:'smooth'})" 
-              class="px-10 py-4.5 bg-slate-950 hover:bg-blue-700 text-white font-black rounded-2xl shadow-xl shadow-slate-950/20 hover:shadow-blue-700/30 hover:scale-[1.02] active:scale-[0.98] transition-all text-xs uppercase tracking-widest relative overflow-hidden group/btn cursor-pointer">
-        <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover/btn:animate-[shimmer_1.5s_infinite]"></span>
-        Comenzar Escaneo Cognitivo
+      <button onclick="document.getElementById('test-section').scrollIntoView({behavior:'smooth'})"
+              class="px-10 py-4 bg-slate-950 hover:bg-blue-700 text-white font-black rounded-2xl shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all text-xs uppercase tracking-widest relative overflow-hidden group/btn cursor-pointer">
+        Comenzar Escaneo Cognitivo →
       </button>
     </div>
-
   </div>
 </header>
 
@@ -88,40 +89,80 @@
 
 <section id="test-section" class="py-20 px-4 max-w-4xl mx-auto">
   <div class="text-center mb-10 space-y-2">
-    <h2 class="text-3xl font-extrabold text-slate-900 uppercase italic tracking-tight">Evaluación Situacional</h2>
-    <p class="text-slate-500 text-sm font-medium">Detecta distorsiones cognitivas comunes como el catastrofismo o el pensamiento polarizado.</p>
+    <h2 class="text-3xl font-extrabold text-slate-900 uppercase italic tracking-tight">
+      Evaluación Situacional
+    </h2>
+    <p class="text-slate-500 text-sm font-medium">
+      Detecta distorsiones cognitivas comunes como el catastrofismo o el pensamiento polarizado.
+    </p>
   </div>
-  
-  @if (!usuarioLogueado() || modoReevaluacion()) {
-    <app-cuestionario (actualizarHome)="onUsuarioActualizado($any($event))"></app-cuestionario>
+
+  @if (!usuarioLogueado() || (usuarioLogueado()?.rol === 'usuario' && modoReevaluacion())) {
     
+    <app-cuestionario (usuarioRegistrado)="onUsuarioActualizado($any($event))"></app-cuestionario>
+
     @if (modoReevaluacion()) {
       <div class="text-center pt-4">
-        <button (click)="cancelarReevaluacion()" class="text-xs font-bold text-slate-400 hover:text-red-600 uppercase tracking-wider transition-colors cursor-pointer">
+        <button (click)="cancelarReevaluacion()"
+                class="text-xs font-bold text-slate-400 hover:text-red-600 uppercase tracking-wider transition-colors cursor-pointer">
           ✕ Cancelar y ver mi registro actual
         </button>
       </div>
     }
+
+  } @else if (usuarioLogueado()?.rol === 'especialista') {
+    
+    <div class="w-full max-w-2xl mx-auto bg-white border border-slate-200 rounded-2xl p-8 md:p-10 text-center shadow-md space-y-4">
+      <div class="w-14 h-14 bg-blue-50 border border-blue-200 text-blue-700 rounded-2xl flex items-center justify-center mx-auto shadow-sm text-2xl">
+        🩺
+      </div>
+      <div class="space-y-1">
+        <h3 class="font-black text-slate-900 text-xl uppercase italic">Consola de Especialista USIL</h3>
+        <p class="text-slate-600 text-xs max-w-md mx-auto leading-relaxed font-medium">
+          Estimado(a) <span class="text-blue-700 font-bold">Dr(a). {{ usuarioLogueado()?.nombres }}</span>, has ingresado con credenciales clínicas corporativas. Su disponibilidad y calendario de citas están activos.
+        </p>
+      </div>
+      <div class="pt-2">
+        <a routerLink="/dashboard-especialista" class="inline-block px-8 py-3 bg-slate-900 hover:bg-blue-700 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-all shadow-md">
+          Gestionar Mis Citas Médicas →
+        </a>
+      </div>
+    </div>
+
   } @else {
-    <div class="w-full max-w-2xl mx-auto bg-white border border-slate-200 rounded-2xl p-8 md:p-10 text-center shadow-md animate-in zoom-in-95 duration-300 space-y-6">
-      <div class="w-12 h-12 bg-blue-50 border border-blue-200 text-blue-700 rounded-xl flex items-center justify-center mx-auto shadow-sm">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+
+    <div class="w-full max-w-2xl mx-auto bg-white border border-slate-200 rounded-2xl p-8 md:p-10 text-center shadow-md space-y-6">
+      <div class="w-14 h-14 bg-blue-50 border border-blue-200 text-blue-700 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
         </svg>
       </div>
+
+      @if (perfilReciente()?.nivelCargaMental) {
+        <div class="flex justify-center">
+          <span [class]="
+            perfilReciente()?.nivelCargaMental === 'CRITICO'  ? 'bg-red-50 border-red-200 text-red-700'   :
+            perfilReciente()?.nivelCargaMental === 'MODERADO' ? 'bg-amber-50 border-amber-200 text-amber-700' :
+                                                                'bg-green-50 border-green-200 text-green-700'
+          " class="border text-xs font-black uppercase tracking-widest px-4 py-1.5 rounded-full">
+            Nivel {{ perfilReciente()?.nivelCargaMental }}
+          </span>
+        </div>
+      }
+
       <div class="space-y-2">
         <h3 class="font-black text-slate-900 text-2xl uppercase italic">¡Protocolo de Análisis Activo!</h3>
         <p class="text-slate-600 text-sm max-w-md mx-auto leading-relaxed font-medium">
-          Hola <span class="text-blue-700 font-bold">{{ usuarioLogueado()?.nombres }}</span>, tus métricas operacionales están listas. Puedes ingresar a tu consola o actualizar tu diagnóstico ejecutando un nuevo escaneo clínico.
+          Hola <span class="text-blue-700 font-bold">{{ usuarioLogueado()?.nombres }}</span>, tus métricas operacionales están listas de forma segura.
         </p>
       </div>
-      
+
       <div class="flex flex-col sm:flex-row justify-center items-center gap-4 pt-2">
         <a routerLink="/user-profile" class="px-6 py-3.5 bg-blue-700 hover:bg-blue-800 text-white font-bold rounded-xl shadow-md transition-all text-xs uppercase tracking-wider w-full sm:w-auto text-center">
-          Ingresar a mi Panel
+          Ingresar a mi Panel →
         </a>
         <button (click)="activarReevaluacion()" class="px-6 py-3.5 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-xl shadow-sm transition-all text-xs uppercase tracking-wider w-full sm:w-auto cursor-pointer">
-          🔄 Realizar Nueva Evaluación
+          🔄 Nueva Evaluación
         </button>
       </div>
     </div>
@@ -129,30 +170,30 @@
 </section>
 
 <section id="dashboard-section" class="py-16 bg-slate-100/60 border-t border-slate-200 w-full overflow-hidden">
-  
   <div class="max-w-6xl mx-auto px-6 mb-10 text-center space-y-2">
     <span class="text-[10px] font-black text-blue-700 uppercase tracking-widest block">Canal de Asignación Prioritaria</span>
     <h2 class="text-2xl font-black text-slate-900 uppercase italic tracking-tight">
-      @if (usuarioLogueado() && perfilReciente()?.nivelCargaMental) {
-        Especialistas Sugeridos para Nivel: <span class="text-blue-700">{{ perfilReciente()?.nivelCargaMental }}</span>
+      @if (usuarioLogueado() && usuarioLogueado()?.rol === 'usuario' && perfilReciente()?.nivelCargaMental) {
+        Especialistas Sugeridos — Nivel
+        <span [class]="
+          perfilReciente()?.nivelCargaMental === 'CRITICO'  ? 'text-red-600'   :
+          perfilReciente()?.nivelCargaMental === 'MODERADO' ? 'text-amber-600' :
+                                                              'text-green-600'
+        ">{{ perfilReciente()?.nivelCargaMental }}</span>
       } @else {
         Métricas de Control y Staff Clínico
       }
     </h2>
-    <p class="text-slate-500 text-xs font-medium">Sincronización automática de especialistas médicos de acuerdo con tu screening de vulnerabilidad cognitiva.</p>
+    <p class="text-slate-500 text-xs font-medium">Sincronización de especialistas según tu screening de vulnerabilidad cognitiva.</p>
   </div>
 
   <div class="w-full">
     <app-panel></app-panel>
   </div>
-
 </section>
 
 @if (mostrarModal()) {
-  <app-diagnostico-modal 
-    [usuario]="perfilReciente()" 
-    (cerrar)="cerrarPopupDiagnostico()">
-  </app-diagnostico-modal>
+  <app-diagnostico-modal [usuario]="perfilReciente()" (cerrar)="cerrPopupDiagnostico()"></app-diagnostico-modal>
 }
 
 @if (mostrarModalLogin()) {

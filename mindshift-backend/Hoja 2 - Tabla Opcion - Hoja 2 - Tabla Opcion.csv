@@ -1,0 +1,241 @@
+escenario_id,texto,distorsion,peso
+1,Seguro me veo mal o doy vergüenza.,personalizacion,2
+1,Quizá la publiqué en mal horario.,neutro,0
+1,"Me incomoda un poco, pero intento no pensar mucho en eso.",neutro,1
+1,La elimino porque siento que hice el ridículo.,todo_o_nada,3
+2,Seguro están molestos conmigo.,lectura_mente,3
+2,Tal vez están ocupados.,neutro,0
+2,Empiezo a sentir ansiedad mientras espero.,neutro,1
+2,Prefiero no volver a escribir.,todo_o_nada,2
+3,Nunca encajo realmente con ellos.,todo_o_nada,3
+3,Quizá fue algo improvisado.,neutro,0
+3,Me siento triste aunque trato de ignorarlo.,neutro,1
+3,Pienso demasiado en qué hice mal.,personalizacion,2
+4,Seguro dije algo estúpido.,lectura_mente,3
+4,Los silencios pasan normalmente.,neutro,0
+4,Me pongo muy nervioso después.,neutro,1
+4,Dejo de hablar para no incomodar.,todo_o_nada,2
+5,Todos me van a juzgar.,lectura_mente,3
+5,No pasa nada si alguien no está de acuerdo.,neutro,0
+5,Escribo y borro varias veces.,neutro,1
+5,Prefiero no publicar nada.,todo_o_nada,2
+6,"Si me equivoco, todos se burlarán.",catastrofico,3
+6,Podría intentar responder.,neutro,0
+6,"Quiero participar, pero me gana el miedo.",neutro,1
+6,Evito levantar la mano.,todo_o_nada,2
+7,Voy a hacer el ridículo.,catastrofico,2
+7,Puedo ponerme nervioso y aun así hacerlo.,neutro,0
+7,Paso días pensando en eso.,filtro_mental,2
+7,Quisiera desaparecer ese día.,todo_o_nada,3
+8,Seguro nadie quiere trabajar conmigo.,lectura_mente,3
+8,A veces la gente se organiza rápido.,neutro,0
+8,Me siento incómodo acercándome.,neutro,1
+8,Espero solo hasta que alguien me hable.,todo_o_nada,2
+9,Todos notaron lo inútil que soy.,personalizacion,3
+9,Cualquiera puede equivocarse.,neutro,0
+9,No dejo de pensar en eso.,filtro_mental,2
+9,Evito participar después.,todo_o_nada,2
+10,Van a pensar que soy tonto.,lectura_mente,3
+10,Preguntar es normal.,neutro,0
+10,Dudo mucho antes de hacerlo.,neutro,1
+10,Prefiero quedarme callado.,todo_o_nada,2
+11,Nunca seré suficiente.,todo_o_nada,3
+11,Cada persona tiene su ritmo.,neutro,0
+11,Me afecta aunque no lo diga.,neutro,1
+11,Prefiero aislarme.,todo_o_nada,2
+12,Seguro piensan mal de mí.,lectura_mente,3
+12,Tal vez no lo dijeron con mala intención.,neutro,0
+12,Le doy vueltas todo el día.,filtro_mental,2
+12,Evito hablar con ellos.,todo_o_nada,2
+13,Voy a quedar mal.,catastrofico,3
+13,Intentaré hacerlo aunque me dé nervios.,neutro,0
+13,Siento mucha presión.,neutro,1
+13,Busco excusas para evitarlo.,todo_o_nada,2
+14,Nunca encajaré.,todo_o_nada,3
+14,Cada persona es distinta.,neutro,0
+14,Me siento incómodo en reuniones.,neutro,1
+14,Prefiero no participar.,todo_o_nada,2
+15,Todo lo hago mal.,todo_o_nada,3
+15,Puedo mejorar algunas cosas.,neutro,0
+15,La crítica se queda en mi cabeza.,filtro_mental,2
+15,Me cierro emocionalmente.,todo_o_nada,2
+16,Pierdo completamente el control del tiempo.,todo_o_nada,3
+16,Intento poner límites,neutro,0
+16,Después me siento culpable.,personalizacion,1
+16,Evito pensar en lo pendiente.,filtro_mental ,2
+17,Siempre arruino todo por distraído.,todo_o_nada ,3
+17,Intento responder apenas lo veo.,neutro,0
+17,Me siento mal cuando lo recuerdo tarde.,neutro,1
+17,Me abruma responder.,catastrofico,2
+18,No puedo concentrarme en nada.,todo_o_nada,3
+18,A veces me distraigo rápido.,neutro,0
+18,Quiero responder pero lo olvido,neutro,1
+18,Me siento saturado mentalmente,catastrofico,2
+19,No puedo desconectarme.,todo_o_nada,3
+19,Intento dejarlo poco a poco.,neutro,0
+19,Siento agotamiento mental.,neutro,1
+19,Uso el celular para evitar pensar.,filtro_mental,2
+20,No entiendo por qué no puedo empezar.,personalizacion,3
+20,Intento organizarme,neutro,0
+20,Me frustra perder tanto tiempo.,neutro,1
+20,Evito la tarea hasta el último momento.,todo_o_nada,2
+21,Me bloqueo y no empiezo.,todo_o_nada,3
+21,Intento dividir la tarea.,neutro,0
+21,Siento ansiedad mientras pasan los días.,neutro,1
+21,Espero hasta el último momento.,todo_o_nada,2
+22,Mi mente se desconecta rápido.,todo_o_nada,3
+22,Intento volver a concentrarme.,neutro,0
+22,Me frustra perder el hilo.,neutro,1
+22,Termino pensando en otra cosa.,filtro_mental,2
+23,No sé ni por dónde empezar.,catastrofico,3
+23,Intento avanzar paso a paso.,neutro,0
+23,Me abruma rápidamente.,catastrofico,2
+23,Lo abandono por momentos.,todo_o_nada,1
+24,Siento que colapsaré.,catastrofico,3
+24,Intento priorizar.,neutro,0
+24,Me paraliza ver tanto pendiente.,todo_o_nada,2
+24,Evito revisar todo.,filtro_mental,2
+25,Pierdo totalmente el enfoque.,todo_o_nada,3
+25,Intento volver a concentrarme.,neutro,0
+25,Me enojo conmigo mismo.,personalizacion,2
+25,Cambio de actividad fácilmente.,filtro_mental,1
+26,Siempre decepciono a todos.,todo_o_nada,3
+26,Intento anotarlo para recordarlo.,neutro,0
+26,Me siento culpable,neutro,1
+26,Se me va de la cabeza sin querer.,neutro,2
+27,Soy demasiado desordenado.,personalizacion,3
+27,Intento crear rutinas.,neutro,0
+27,Me frustra mucho.,neutro,1
+27,No sé cómo organizarme.,todo_o_nada,2
+28,Nunca termino nada.,todo_o_nada,3
+28,Intento avanzar poco a poco.,neutro,0
+28,Me distraigo fácilmente.,neutro,1
+28,Pierdo motivación rápido.,filtro_mental,2
+29,Siento que soy un problema.,personalizacion,3
+29,Intento mejorar mis hábitos.,neutro,0
+29,Me afecta mucho emocionalmente.,neutro,1
+29,Me cierro o me irrito.,todo_o_nada,2
+30,No logro mantenerla,neutro,2
+30,Intento retomarla cuando fallo.,neutro,0
+30,Me frustra romperla.,neutro,1
+30,Abandono rápido.,todo_o_nada,3
+31,No tengo energía para ir.,neutro,2
+31,Intento animarme aunque cueste.,neutro,0
+31,Me siento agotado emocionalmente.,neutro,1
+31,Prefiero quedarme aislado.,todo_o_nada,3
+32,Siento que mi vida está estancada.,todo_o_nada,3
+32,Cada persona vive procesos distintos.,neutro,0
+32,Me comparo constantemente.,filtro_mental,2
+32,Pierdo más motivación.,neutro,1
+33,No tengo ganas de responder.,neutro,2
+33,Intento responder aunque tarde.,neutro,0
+33,Me cuesta socializar.,neutro,1
+33,Ignoro los mensajes.,todo_o_nada,3
+34,No puedo con el cansancio mental.,neutro,2
+34,Intento explicarlo.,neutro,0
+34,Siento culpa después.,personalizacion,2
+34,Evito ver personas.,todo_o_nada,3
+35,Siento vacío.,neutro,3
+35,Intento distraerme sanamente.,neutro,0
+35,No encuentro motivación.,neutro,1
+35,Me desconecto de todo.,todo_o_nada,2
+36,No tengo fuerzas para salir de la cama.,neutro,3
+36,Intento levantarme poco a poco.,neutro,0
+36,Todo se siente pesado.,neutro,1
+36,Quiero evitar el día.,todo_o_nada,2
+37,Siento que ya arruiné todo.,catastrofico,3
+37,Intento avanzar aunque sea poco.,neutro,0
+37,Me siento sobrepasado.,neutro,1
+37,No hago nada porque siento que no vale la pena.,todo_o_nada,3
+38,Siento que no llegaré a nada.,todo_o_nada,3
+38,Intento enfocarme en el presente.,neutro,0
+38,Me da desesperanza.,neutro,2
+38,Evito pensar en el futuro.,filtro_mental,1
+39,Siento que soy un fracaso.,todo_o_nada,3
+39,Todos cometemos errores.,neutro,0
+39,Me afecta demasiado.,neutro,1
+39,Pierdo ganas de seguir.,todo_o_nada,2
+40,No encuentro motivación.,neutro,2
+40,Intento empezar aunque cueste.,neutro,0
+40,Me siento emocionalmente agotado.,neutro,1
+40,La dejo pasar.,todo_o_nada,3
+41,No tengo energía para arreglarlo.,neutro,2
+41,Intento ordenar poco a poco.,neutro,0
+41,Me siento mal viendo el desorden.,neutro,1
+41,Lo ignoro completamente.,todo_o_nada,3
+42,No tengo ganas de hablar.,neutro,2
+42,Intento responder aunque me cueste.,neutro,0
+42,Me siento desconectado.,neutro,1
+42,Prefiero encerrarme.,todo_o_nada,3
+43,Ya no me emocionan.,neutro,3
+43,Intento retomarlas lentamente.,neutro,0
+43,Siento apatía.,neutro,1
+43,No quiero hacer nada.,todo_o_nada,2
+44,Paso casi todo el tiempo acostado.,neutro,3
+44,Intento hacer algo pequeño.,neutro,0
+44,Me siento vacío.,neutro,2
+44,Evito contacto con otros,todo_o_nada,2
+45,Todo me cuesta demasiado.,todo_o_nada,2
+45,Intento mantener pequeñas rutinas.,neutro,0
+45,Me siento agotado constantemente.,neutro,1
+45,Dejo de preocuparme por mí.,todo_o_nada,3
+46,Mi contenido no es suficiente.,personalizacion,3
+46,Las redes no definen mi valor.,neutro,0
+46,Me comparo con otros perfiles.,filtro_mental,2
+46,Elimino la publicación.,todo_o_nada,2
+47,Nunca me veré así.,todo_o_nada,3
+47,Las redes muestran solo una parte.,neutro,0
+47,Me siento inferior.,neutro,1
+47,Empiezo a criticar mi apariencia.,filtro_mental,3
+48,Necesito validación.,todo_o_nada,2
+48,Intento no obsesionarme.,neutro,0
+48,Mi ánimo depende de las interacciones.,personalizacion,3
+48,Borro la foto si no funciona.,todo_o_nada,2
+49,Siempre voy atrasado.,todo_o_nada,3
+49,Cada persona tiene su proceso.,neutro,0
+49,Siento presión constante.,neutro,1
+49,Nunca estoy satisfecho.,filtro_mental,3
+50,Quedé como un inútil.,todo_o_nada,3
+50,Todos se equivocan.,neutro,0
+50,Pienso demasiado en eso.,filtro_mental,2
+50,Me castigo mentalmente.,personalizacion,3
+51,Debí sacar más.,todo_o_nada,2
+51,Es una buena nota.,neutro,0
+51,Solo pienso en los errores.,filtro_mental,2
+51,Siento frustración igual.,neutro,1
+52,Nunca está suficientemente perfecto.,todo_o_nada,3
+52,Lo importante es avanzar.,neutro,0
+52,Paso demasiado tiempo corrigiendo.,filtro_mental,2
+52,Prefiero no entregarlo.,todo_o_nada,3
+53,Soy menos capaz.,personalizacion,3
+53,Cada quien aprende distinto.,neutro,0
+53,Me comparo constantemente.,filtro_mental,2
+53,Siento presión extrema.,neutro,1
+54,Seguro no doy la talla.,lectura_mente,2
+54,Podría intentarlo.,neutro,0
+54,Tengo miedo a fracasar.,neutro,1
+54,Ni siquiera postulo.,todo_o_nada,3
+55,Significa que no soy bueno.,todo_o_nada,3
+55,Puedo usarla para mejorar.,neutro,0
+55,Me afecta demasiado.,neutro,1
+55,Me obsesiono con el error.,filtro_mental,2
+56,Nunca cumpliré sus expectativas.,todo_o_nada,3
+56,Intento hacer lo mejor posible.,neutro,0
+56,Siento presión constante.,neutro,1
+56,Me culpo cuando fallo.,personalizacion,2
+57,Arruiné todo.,todo_o_nada,3
+57,Un error no define el proceso.,neutro,0
+57,Me castigo mentalmente.,personalizacion,2
+57,Pierdo motivación completamente..,todo_o_nada,2
+58,No puedo perdonarme.,todo_o_nada,3
+58,Intento aprender de ellos.,neutro,0
+58,Los recuerdo constantemente.,filtro_mental,2
+58,Siento vergüenza.,neutro,1
+59,Entonces fue un fracaso.,todo_o_nada,3
+59,No todo sale perfecto.,neutro,0
+59,Me frustra demasiado.,neutro,1
+59,Siento que nunca soy suficiente.,personalizacion,3
+60,Nunca llegaré a eso.,todo_o_nada,3
+60,Cada persona tiene su camino.,neutro,0
+60,Me afecta emocionalmente.,neutro,1
+60,Siento que decepciono a todos.,lectura_mente,2

@@ -6,7 +6,7 @@ import { routes } from './app.routes';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }), 
-    provideRouter(routes, withComponentInputBinding()), // 👈 🚀 ¡AGREGADO AQUÍ PARA LEER EL :ID!
+    provideRouter(routes, withComponentInputBinding()),
     provideHttpClient() 
   ]
 };

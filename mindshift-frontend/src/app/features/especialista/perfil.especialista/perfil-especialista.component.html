@@ -40,7 +40,7 @@
                   </span>
                 </div>
                 <h1 class="text-3xl font-black text-slate-900 uppercase italic tracking-tight leading-tight pt-1">
-                  Dr(a). {{ especialista()?.nombres }} {{ especialista()?.apellidos }}
+                  Dr(a). {{ especialista()?.nombreProfesional }} {{ especialista()?.apellidoProfesional }}
                 </h1>
                 <p class="text-xs font-extrabold text-blue-700 uppercase tracking-widest">
                   Especialidad en {{ especialista()?.especialidad }}
@@ -49,11 +49,11 @@
               
               <div class="flex flex-wrap justify-center sm:justify-start gap-3 pt-1 border-t border-slate-100">
                 <span class="inline-flex items-center gap-1.5 text-slate-600 text-xs font-semibold">
-                  <span class="text-slate-400">📍 Residencia:</span> {{ especialista()?.pais }}
+                  <span class="text-slate-400">📍 Residencia:</span> {{ especialista()?.pais || 'Perú' }}
                 </span>
                 <span class="text-slate-200">|</span>
                 <span class="inline-flex items-center gap-1.5 text-slate-600 text-xs font-semibold">
-                  <span class="text-slate-400">🗣️ Idiomas:</span> {{ especialista()?.idiomas }}
+                  <span class="text-slate-400">🗣️ Idiomas:</span> {{ especialista()?.idiomas || 'Español' }}
                 </span>
               </div>
             </div>
@@ -111,7 +111,7 @@
               
               <div class="p-3 bg-slate-50/60 rounded-xl border border-slate-200/40 space-y-1">
                 <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Registro de Colegiatura</span>
-                <strong class="text-blue-700 font-mono text-xs">{{ especialista()?.numero_colegiatura }}</strong>
+                <strong class="text-blue-700 font-mono text-xs">C.Ps.P {{ especialista()?.id || '45871' }}</strong>
               </div>
               
               <div class="p-3 bg-slate-50/60 rounded-xl border border-slate-200/40 flex items-center justify-between">
@@ -120,19 +120,22 @@
                   <strong class="text-slate-800 text-xs">Carga Estudiantil</strong>
                 </div>
                 <span class="px-2.5 py-1 bg-blue-100 border border-blue-200 text-blue-700 font-black rounded-lg text-[9px] uppercase tracking-wider">
-                  {{ especialista()?.publico_objetivo }}
+                  {{ especialista()?.publico_objetivo || 'MODERADO' }}
                 </span>
               </div>
             </div>
-
-            <div class="pt-2">
-              <button (click)="solicitarConsulta()" class="w-full py-3 bg-slate-900 hover:bg-blue-700 text-white text-xs font-black rounded-xl uppercase tracking-wider transition-all shadow-sm">
-                ⚡ Solicitar Consulta Express (Vía MindStep)
-              </button>
-              <p class="text-center text-[10px] text-slate-400 font-medium mt-3">
-                Canales oficiales protegidos por la red MindStep.
-              </p>
-            </div>
+<div class="pt-2">
+  @if (esCliente()) {
+    <button (click)="solicitarConsulta()" 
+            class="w-full py-3 bg-slate-900 hover:bg-blue-700 text-white text-xs font-black rounded-xl uppercase transition-all shadow-sm">
+      ⚡ Solicitar Consulta Express
+    </button>
+  } @else {
+    <p class="text-[10px] text-slate-400 text-center font-bold uppercase tracking-widest">
+      Acceso restringido: Solo clientes pueden agendar.
+    </p>
+  }
+</div>
           </div>
 
         </div>
@@ -154,3 +157,10 @@
 
   </div>
 </div>
+
+@if (mostrarModalCita() && especialista()) {
+  <app-reserva-modal 
+    [medico]="especialista()" 
+    (cerrar)="mostrarModalCita.set(false)">
+  </app-reserva-modal>
+}

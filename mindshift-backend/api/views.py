@@ -1,94 +1,158 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from .models import Especialista, Publicacion, ConsultaEspecialista, HistorialTest, AlumnoUsuario
+from .models import Usuario, Escenario, Opciones, Profesional, Reserva
 from .serializers import (
-    EspecialistaSerializer, PublicacionSerializer, 
-    ConsultaEspecialistaSerializer, HistorialTestSerializer, 
-    AlumnoUsuarioSerializer
+    UsuarioSerializer, EscenarioSerializer, OpcionesSerializer,
+    ProfesionalSerializer, ReservaSerializer
 )
 
-class EspecialistaViewSet(viewsets.ModelViewSet):
-    queryset = Especialista.objects.all().prefetch_related('publicaciones', 'consultas')
-    serializer_class = EspecialistaSerializer
 
-    @action(detail=True, methods=['post'], url_path='cambiar-contra')
-    def cambiar_contra(self, request, pk=None):
-        especialista = self.get_object()
-        nueva_contra = request.data.get('nueva_contrasena')
-        
-        if not nueva_contra:
-            return Response({"error": "Debe proporcionar la nueva contraseña."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        especialista.password_hash = nueva_contra
-        especialista.save()
-        return Response({"status": "Contraseña cambiada exitosamente en SQLite."}, status=status.HTTP_200_OK)
+class UsuarioViewSet(viewsets.ModelViewSet):
+    queryset         = Usuario.objects.all()
+    serializer_class = UsuarioSerializer
 
-
-class PublicacionViewSet(viewsets.ModelViewSet):
-    queryset = Publicacion.objects.all().order_by('-fecha_publicacion')
-    serializer_class = PublicacionSerializer
-
-    def create(self, request, *args, **kwargs):
-        especialista_id = request.data.get('especialista_id')
+    @action(detail=False, methods=['post'], url_path='registro')
+    def registro(self, request):
+        puntaje = request.data.get('puntaje', 0)
         try:
-            especialista = Especialista.objects.get(id=especialista_id)
-        except Especialista.DoesNotExist:
-            return Response({"error": "Especialista no encontrado."}, status=status.HTTP_404_NOT_FOUND)
+            puntaje = int(puntaje)
+        except (ValueError, TypeError):
+            puntaje = 0
 
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(especialista=especialista)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if puntaje >= 18:
+            nivel = "CRITICO"
+        elif puntaje >= 10:
+            nivel = "MODERADO"
+        else:
+            nivel = "BAJO"
 
+        data_mapeada = {
+            'nombreUsuario':   request.data.get('nombre'),
+            'apellidoUsuario': request.data.get('apellido'),
+            'correoUsuario':   request.data.get('email'),
+            'telefonoUsuario': request.data.get('telefono'),
+            'clave':           request.data.get('password'),
+            'nivel_riesgo':    nivel,
+            'generoUsuario':   request.data.get('genero', '')  # ✅ opcional
+        }
 
-class ConsultaEspecialistaViewSet(viewsets.ModelViewSet):
-    queryset = ConsultaEspecialista.objects.all().order_by('-fecha_solicitud')
-    serializer_class = ConsultaEspecialistaSerializer
+        serializer = UsuarioSerializer(data=data_mapeada)
+        if serializer.is_valid():
+            usuario = serializer.save()
+            return Response({
+                "status":       "Éxito",
+                "id":           usuario.id,
+                "nombres":      usuario.nombreUsuario,
+                "apellido":     usuario.apellidoUsuario,
+                "correo":       usuario.correoUsuario,
+                "nivel_riesgo": usuario.nivel_riesgo,
+                "puntaje":      puntaje
+            }, status=status.HTTP_201_CREATED)
 
-
-# 📥 HISTORIAL: Ordenado cronológicamente para heredar el último test arriba
-class HistorialTestViewSet(viewsets.ModelViewSet):
-    queryset = HistorialTest.objects.all().order_by('-id')
-    serializer_class = HistorialTestSerializer
-
-
-class AlumnoUsuarioViewSet(viewsets.ModelViewSet):
-    queryset = AlumnoUsuario.objects.all().prefetch_related('consultas_solicitadas', 'historial_tests')
-    serializer_class = AlumnoUsuarioSerializer
-
-    def create(self, request, *args, **kwargs):
-        data = request.data.copy()
-        
-        if 'correo' in data and not data.get('username'):
-            data['username'] = data['correo'].split('@')[0]
-
-        serializer = self.get_serializer(data=data)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['post'], url_path='login')
-    def login_alumno(self, request):
-        correo = request.data.get('correo')
+    def login(self, request):
+        correo   = request.data.get('username')
         password = request.data.get('password')
-
-        if not correo or not password:
-            return Response(
-                {"error": "Falta proporcionar correo y contraseña."}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
         try:
-            alumno = AlumnoUsuario.objects.get(correo=correo, password_hash=password)
-            serializer = self.get_serializer(alumno)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-            
-        except AlumnoUsuario.DoesNotExist:
+            usuario = Usuario.objects.get(correoUsuario=correo, clave=password)
+            return Response({
+                "status":       "Login exitoso",
+                "id":           usuario.id,
+                "nombres":      usuario.nombreUsuario,
+                "apellido":     usuario.apellidoUsuario,
+                "correo":       usuario.correoUsuario,
+                "nivel_riesgo": usuario.nivel_riesgo
+            }, status=status.HTTP_200_OK)
+        except Usuario.DoesNotExist:
             return Response(
-                {"error": "Credenciales inválidas. Verifica tu correo o contraseña corporativa."}, 
+                {"error": "Credenciales inválidas"},
                 status=status.HTTP_401_UNAUTHORIZED
             )
+
+
+class EscenarioViewSet(viewsets.ModelViewSet):
+    queryset         = Escenario.objects.all().order_by('orden')
+    serializer_class = EscenarioSerializer
+
+
+class OpcionesViewSet(viewsets.ModelViewSet):
+    queryset         = Opciones.objects.all()
+    serializer_class = OpcionesSerializer
+
+
+class ProfesionalViewSet(viewsets.ModelViewSet):
+    queryset         = Profesional.objects.all()
+    serializer_class = ProfesionalSerializer
+
+    @action(detail=False, methods=['get'], url_path='buscar')
+    def buscar(self, request):
+        especialidad = request.query_params.get('especialidad')
+        if especialidad:
+            profesionales = Profesional.objects.filter(
+                especialidad__icontains=especialidad
+            )
+        else:
+            profesionales = Profesional.objects.all()
+        serializer = ProfesionalSerializer(profesionales, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['post'], url_path='login')
+    def login(self, request):
+        correo   = request.data.get('username')
+        password = request.data.get('password')
+        try:
+            p = Profesional.objects.get(correoProfesional=correo, clave=password)
+            return Response({
+                "status":                 "Login exitoso",
+                "id":                     p.id,
+                "nombreProfesional":      p.nombreProfesional,
+                "apellidoProfesional":    p.apellidoProfesional,
+                "especialidad":           p.especialidad,
+                "validacion":             p.validacion,
+                "avatar_icono":           p.avatar_icono            or '',
+                "descripcion_trayectoria": p.descripcion_trayectoria or '',
+                "enlace_agenda":          p.enlace_agenda            or '',
+                "generoProfesional":      p.generoProfesional        or ''
+            }, status=status.HTTP_200_OK)
+        except Profesional.DoesNotExist:
+            return Response(
+                {"error": "Credenciales inválidas"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+# En views.py
+class ReservaViewSet(viewsets.ModelViewSet):
+    serializer_class = ReservaSerializer
+    
+    def get_queryset(self):
+        # Usamos distinct() para asegurar que no haya filas duplicadas
+        queryset = Reserva.objects.all().order_by('-fecha').distinct()
+        
+        user_id = self.request.query_params.get('idUsuario')
+        if user_id:
+            queryset = queryset.filter(idUsuario=user_id)
+            
+        return queryset
+
+    def perform_create(self, serializer):
+        # El serializer ya debería capturar el 'motivo' enviado desde el JSON del frontend
+        # Si quisieras hacer validaciones extra antes de guardar, las harías aquí:
+        serializer.save()
+
+    @action(detail=False, methods=['get'], url_path='por-usuario')
+    def por_usuario(self, request):
+        """Opcional: Filtrar reservas por ID de usuario"""
+        user_id = request.query_params.get('idUsuario')
+        reservas = Reserva.objects.filter(idUsuario=user_id).order_by('-fecha')
+        serializer = self.get_serializer(reservas, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], url_path='por-profesional')
+    def por_profesional(self, request):
+        """Opcional: Filtrar reservas por ID de profesional"""
+        prof_id = request.query_params.get('idProfesional')
+        reservas = Reserva.objects.filter(idProfesional=prof_id).order_by('-fecha')
+        serializer = self.get_serializer(reservas, many=True)
+        return Response(serializer.data)

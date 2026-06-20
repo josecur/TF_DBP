@@ -35,14 +35,54 @@
       </span>
     </div>
 
-    <div class="space-y-2">
+   <div class="space-y-2">
+  
+  @switch (distorsionDetectada) {
+    
+    @case ('todo_o_nada') {
       <p class="text-slate-600 text-sm leading-relaxed font-medium">
-        Tus vectores de respuesta procesados relacionalmente indican que presentas un patrón predominante de 
-        <span class="text-blue-700 font-bold">"{{ usuario?.historial?.[0]?.distorsion_predominante || 'Sobrecarga General' }}"</span>. 
-        Este estado suele manifestarse durante entregas críticas académicas o despliegues pesados de backend.
+        Tus vectores indican un patrón predominante de <span class="text-blue-700 font-bold">"Pensamiento de Todo o Nada"</span>. 
+        Tiendes a ver las situaciones en extremos (éxito total o fracaso absoluto), sin reconocer los puntos medios. Este estado suele manifestarse con fuerte autoexigencia académica.
       </p>
-    </div>
+    }
 
+    @case ('catastrofico') {
+      <p class="text-slate-600 text-sm leading-relaxed font-medium">
+        Tus vectores indican un patrón predominante de <span class="text-blue-700 font-bold">"Pensamiento Catastrófico"</span>. 
+        Tu mente anticipa rápidamente el peor escenario posible ante situaciones de incertidumbre. Es un mecanismo de defensa que puede generar alta ansiedad.
+      </p>
+    }
+
+    @case ('lectura_mente') {
+      <p class="text-slate-600 text-sm leading-relaxed font-medium">
+        Tus vectores indican un patrón predominante de <span class="text-blue-700 font-bold">"Lectura de Mente"</span>. 
+        Sueles asumir que los demás te están juzgando negativamente, incluso cuando no hay pruebas reales de ello. Esto agota tu energía social rápidamente.
+      </p>
+    }
+
+    @case ('filtro_mental') {
+      <p class="text-slate-600 text-sm leading-relaxed font-medium">
+        Tus vectores indican un patrón predominante de <span class="text-blue-700 font-bold">"Filtro Mental"</span>. 
+        Sueles enfocarte exclusivamente en un detalle negativo de tu día o desempeño, ignorando por completo todo lo positivo que también ocurrió.
+      </p>
+    }
+
+    @case ('personalizacion') {
+      <p class="text-slate-600 text-sm leading-relaxed font-medium">
+        Tus vectores indican un patrón predominante de <span class="text-blue-700 font-bold">"Personalización"</span>. 
+        Tiendes a asumir la culpa por eventos externos que no están bajo tu control directo, sintiendo demasiada responsabilidad por las reacciones de otros.
+      </p>
+    }
+
+    @default {
+      <p class="text-slate-600 text-sm leading-relaxed font-medium">
+        Tus vectores indican un <span class="text-green-700 font-bold">Patrón Cognitivo Equilibrado</span>. 
+        Cuentas con buenas herramientas de afrontamiento para procesar las tensiones cotidianas sin caer en extremos que desgasten tu energía mental.
+      </p>
+    }
+  }
+
+</div>
     <div class="border-t border-slate-100 w-full"></div>
 
     <div class="space-y-3">

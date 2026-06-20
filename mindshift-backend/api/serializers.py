@@ -1,62 +1,107 @@
 from rest_framework import serializers
-from .models import Especialista, Publicacion, ConsultaEspecialista, HistorialTest, AlumnoUsuario
+from .models import Escenario, Opciones, Usuario, Profesional, Reserva
 
-# 📰 Serializer para las publicaciones (Se mantiene igual)
-class PublicacionSerializer(serializers.ModelSerializer):
+class OpcionesSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Publicacion
-        fields = ['id', 'categoria', 'titulo', 'contenido', 'fecha_publicacion']
+        model = Opciones
+        fields = ['id', 'idEscenario', 'contenido', 'valor_puntos']
 
-
-# 📥 Serializer para las consultas de los alumnos (ACTUALIZADO)
-class ConsultaEspecialistaSerializer(serializers.ModelSerializer):
+class EscenarioSerializer(serializers.ModelSerializer):
+    opciones = OpcionesSerializer(many=True, read_only=True)
     class Meta:
-        model = ConsultaEspecialista
+        model = Escenario
+        fields = ['id', 'categoria', 'enunciado', 'orden', 'opciones']
+
+class UsuarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Usuario
         fields = [
-            'id', 'especialista', 'alumno_usuario', 'alumno_nombre', 
-            'alumno_correo', 'motivo', 'estado', 'fecha_solicitud'
+            'id', 'nombreUsuario', 'apellidoUsuario', 'telefonoUsuario', 
+            'correoUsuario', 'clave', 'nivel_riesgo', 'generoUsuario'
         ]
+        extra_kwargs = {'clave': {'write_only': True}}
 
+class ProfesionalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profesional
+        fields = [
+            'id', 'nombreProfesional', 'apellidoProfesional', 'telefonoProfesional', 
+            'correoProfesional', 'clave', 'especialidad', 'validacion', 'universidad',
+            'avatar_icono', 'descripcion_trayectoria', 'enlace_agenda', 'generoProfesional'
+        ]
+        extra_kwargs = {
+            'clave': {'write_only': True, 'required': False} 
+        }
 
-# 🩺 Serializer principal del especialista (Se mantiene igual)
-class EspecialistaSerializer(serializers.ModelSerializer):
-    publicaciones = PublicacionSerializer(many=True, read_only=True)
-    consultas = ConsultaEspecialistaSerializer(many=True, read_only=True)
+    def update(self, instance, validated_data):
+        if 'clave' in validated_data:
+            instance.clave = validated_data.pop('clave')
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+class ReservaSerializer(serializers.ModelSerializer):
+    # ... tus campos (se quedan igual) ...
+    alumno_nombre = serializers.SerializerMethodField()
+    alumno_correo = serializers.SerializerMethodField()
+    nivel_riesgo = serializers.SerializerMethodField()
+    medico_nombre = serializers.SerializerMethodField()
+    medico_contacto = serializers.SerializerMethodField()
+    
+    contacto_correo = serializers.EmailField(write_only=True, required=False)
+    contacto_whatsapp = serializers.URLField(write_only=True, required=False)
 
     class Meta:
-        model = Especialista
+        model = Reserva
         fields = [
-            'id', 'username', 'password_hash', 'correo', 'nombres', 'apellidos', 
-            'numero_colegiatura', 'universidad', 'especialidad', 'pais', 'idiomas', 
-            'publico_objetivo', 'descripcion_trayectoria', 'fecha_registro', 
-            'distorsiones_tratadas', 'telefono', 'enlace_agenda', 'avatar_icono',
-            'publicaciones', 'consultas'
+            'id', 'idUsuario', 'idProfesional', 'estado', 'fecha', 'motivo', 
+            'contacto_correo', 'contacto_whatsapp', 
+            'alumno_nombre', 'alumno_correo', 'nivel_riesgo', 
+            'medico_nombre', 'medico_contacto'
         ]
-        extra_kwargs = {'password_hash': {'write_only': True}}
+        # AGREGA ESTO PARA HACER LOS CAMPOS OPCIONALES EN ACTUALIZACIONES
+        extra_kwargs = {
+            'idUsuario': {'required': False},
+            'idProfesional': {'required': False},
+            'fecha': {'required': False},
+            'motivo': {'required': False},
+            'estado': {'required': False}
+        }
 
+    def get_alumno_nombre(self, obj):
+        return f"{obj.idUsuario.nombreUsuario} {obj.idUsuario.apellidoUsuario}" if obj.idUsuario else "Usuario no encontrado"
 
-# 📊 Serializer para el historial de tests cognitivos (Mapea explícitamente todo)
-class HistorialTestSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = HistorialTest
-        fields = [
-            'id', 'alumno_usuario', 'usuario_nombre', 'puntuacion_total', 
-            'distorsion_predominante', 'nivel_carga_calculado', 'fecha_evaluacion'
-        ]
+    def get_medico_nombre(self, obj):
+        return f"Dr(a). {obj.idProfesional.nombreProfesional} {obj.idProfesional.apellidoProfesional}" if obj.idProfesional else "Profesional no asignado"
 
+    def get_alumno_correo(self, obj):
+        return obj.idUsuario.correoUsuario if obj.estado == 'Aceptado' and obj.idUsuario else "Oculto"
 
-# 📥 NUEVO SERIALIZER: AlumnoUsuario (Para registrar, loguear y gestionar la data del alumno)
-# 📥 SERIALIZER: AlumnoUsuario (CORREGIDO)
-class AlumnoUsuarioSerializer(serializers.ModelSerializer):
-    consultas_solicitadas = ConsultaEspecialistaSerializer(many=True, read_only=True)
-    historial_tests = HistorialTestSerializer(many=True, read_only=True)
+    def get_nivel_riesgo(self, obj):
+        return obj.idUsuario.nivel_riesgo if obj.estado == 'Aceptado' and obj.idUsuario else "Bloqueado"
 
-    class Meta:
-        model = AlumnoUsuario
-        fields = [
-            'id', 'username', 'password_hash', 'correo', 'nombres', 'apellidos', 
-            'codigo_identificacion',  # 🎯 ¡FIJADO AQUÍ! Cambiado de 'identification' a 'identificacion'
-            'carrera', 'telefono', 'fecha_registro', 
-            'ultimo_nivel_carga', 'consultas_solicitadas', 'historial_tests'
-        ]
-        extra_kwargs = {'password_hash': {'write_only': True}}
+    def get_medico_contacto(self, obj):
+        if obj.estado == 'Aceptado' and obj.idProfesional:
+            return {
+                "telefono": obj.idProfesional.telefonoProfesional,
+                "correo": obj.contacto_correo or obj.idProfesional.correoProfesional,
+                "enlace": obj.contacto_whatsapp or obj.idProfesional.enlace_agenda
+            }
+        return {"mensaje": "Privado"}
+
+    def create(self, validated_data):
+        # Manejo de creación inicial
+        return Reserva.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.estado = validated_data.get('estado', instance.estado)
+        instance.motivo = validated_data.get('motivo', instance.motivo)
+        
+        # Guardar los campos de contacto si vienen en el PUT
+        if 'contacto_correo' in validated_data:
+            instance.contacto_correo = validated_data['contacto_correo']
+        if 'contacto_whatsapp' in validated_data:
+            instance.contacto_whatsapp = validated_data['contacto_whatsapp']
+            
+        instance.save()
+        return instance

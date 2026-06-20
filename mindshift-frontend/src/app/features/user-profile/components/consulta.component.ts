@@ -5,10 +5,13 @@ import { CommonModule } from '@angular/common';
   selector: 'app-consulta-modal',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './consulta.component.html'
+  templateUrl: './consulta.component.html',
+  styles: [] 
 })
 export class ConsultaComponent {
-  @Input() citaData: any = null;
+  // Recibe la reserva completa desde el padre
+  @Input() citaData: any; 
+  // Emite un evento para cerrar el modal
   @Output() cerrar = new EventEmitter<void>();
 
   cerrarModal() {

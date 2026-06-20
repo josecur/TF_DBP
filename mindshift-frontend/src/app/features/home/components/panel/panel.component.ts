@@ -3,19 +3,19 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { EspecialistaService } from '../../../especialista/registro-especialista/especialista.service';
 
+// 🎯 Sincronizado con el modelo exacto de Django
 export interface Especialista {
   id?: number; 
-  nombres: string;
-  apellidos: string;
+  nombreProfesional: string;    // 👈 Cambiado para coincidir con el ORM
+  apellidoProfesional: string;  // 👈 Cambiado para coincidir con el ORM
   especialidad: string;
   descripcion_trayectoria: string;
   universidad: string;
-  numero_colegiatura: string;
-  pais: string;
-  idiomas: string;
-  publico_objetivo: string;
-  enlace_agenda?: string;
+  validacion: number;
   avatar_icono: string;
+  pais?: string;
+  idiomas?: string;
+  publico_objetivo?: string;
 }
 
 @Component({
@@ -23,7 +23,7 @@ export interface Especialista {
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './panel.component.html',
-  styleUrls: ['./panel.component.css'] // Asegúrate de que coincida con tu árbol de archivos
+  styleUrls: ['./panel.component.css']
 })
 export class AppPanelComponent implements OnInit {
   private especialistaService = inject(EspecialistaService);

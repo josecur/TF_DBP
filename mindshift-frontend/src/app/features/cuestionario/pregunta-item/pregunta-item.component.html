@@ -1,0 +1,33 @@
+<div *ngIf="pregunta" class="flex flex-col gap-6">
+
+  <!-- Enunciado -->
+  <div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-6">
+    <p class="text-white font-bold text-base md:text-lg leading-relaxed">
+      {{ pregunta.enunciado }}
+    </p>
+  </div>
+
+  <!-- Opciones -->
+  <div class="flex flex-col gap-3">
+    <button
+      *ngFor="let op of pregunta.opciones"
+      (click)="enviarRespuesta(op.valor_puntos)"
+      [class]="opcionSeleccionada === op.valor_puntos
+        ? 'bg-blue-600 border-blue-500 text-white scale-[0.98]'
+        : 'bg-slate-800/60 border-slate-600/40 text-slate-300 hover:bg-slate-700/60 hover:border-blue-500/50 hover:text-white'"
+      class="w-full flex items-center gap-4 border rounded-xl px-5 py-4 
+             text-left text-sm font-semibold transition-all duration-150 
+             cursor-pointer group">
+
+      <!-- Bullet indicador -->
+      <span [class]="opcionSeleccionada === op.valor_puntos
+              ? 'bg-white/20 border-white/40'
+              : 'bg-slate-700 border-slate-500 group-hover:border-blue-400'"
+            class="w-5 h-5 rounded-full border-2 shrink-0 transition-all duration-150">
+      </span>
+
+      {{ op.contenido }}
+    </button>
+  </div>
+
+</div>

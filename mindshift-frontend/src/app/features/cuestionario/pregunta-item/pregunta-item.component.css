@@ -1,0 +1,28 @@
+.pregunta-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.opciones-lista {
+  width: 100%;
+  max-width: 500px; /* Esto mantiene el ancho controlado */
+  margin-top: 20px;
+}
+
+.opcion-btn {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 18px;
+  text-align: left; /* Alinea el texto a la izquierda como en un formulario */
+  border: 1px solid #d1d9e6;
+  border-radius: 12px;
+  background: white;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.opcion-btn:hover {
+  background: #f0f4f8;
+  transform: scale(1.02); /* Un efecto sutil al pasar el mouse */
+}

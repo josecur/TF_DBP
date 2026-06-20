@@ -1,0 +1,181 @@
+<div class="min-h-screen flex items-center justify-center px-4">
+  <div class="w-full max-w-md bg-slate-900 border border-slate-700/50 rounded-3xl p-8 shadow-2xl">
+
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <span class="inline-block bg-blue-600/20 border border-blue-500/30 text-blue-400 
+                   text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">
+        {{ esRegistro ? 'Nueva cuenta' : 'Acceso al sistema' }}
+      </span>
+      <h1 class="text-3xl font-black text-white italic tracking-tight">
+        Mind<span class="text-blue-400">Step</span>
+      </h1>
+      <p class="text-slate-400 text-sm mt-2">
+        {{ esRegistro 
+          ? 'Completa tu perfil para recibir tu diagnóstico' 
+          : 'Ingresa tus credenciales para ver tu reporte' }}
+      </p>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="errorMsg" 
+         class="bg-red-500/10 border border-red-500/30 text-red-400 text-sm 
+                rounded-xl px-4 py-3 mb-6 flex items-center gap-2">
+      <span>⚠</span>
+      <span>{{ errorMsg }}</span>
+    </div>
+
+    <!-- Form -->
+    <form (ngSubmit)="enviarFormulario()" class="space-y-4">
+
+      <!-- Nombre + Apellido (solo registro) -->
+      <div class="grid grid-cols-2 gap-3" *ngIf="esRegistro">
+        <div class="flex flex-col gap-1.5">
+          <label class="text-slate-400 text-xs font-semibold uppercase tracking-wider">
+            Nombre
+          </label>
+          <input type="text"
+                 [(ngModel)]="usuario.nombre"
+                 name="nombre"
+                 placeholder="Ej: Carlos"
+                 required
+                 class="bg-slate-800 border border-slate-600/50 text-white text-sm 
+                        rounded-xl px-4 py-3 outline-none placeholder-slate-600
+                        focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 
+                        transition-all duration-200">
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-slate-400 text-xs font-semibold uppercase tracking-wider">
+            Apellido
+          </label>
+          <input type="text"
+                 [(ngModel)]="usuario.apellido"
+                 name="apellido"
+                 placeholder="Ej: López"
+                 required
+                 class="bg-slate-800 border border-slate-600/50 text-white text-sm 
+                        rounded-xl px-4 py-3 outline-none placeholder-slate-600
+                        focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 
+                        transition-all duration-200">
+        </div>
+      </div>
+
+      <!-- Teléfono (solo registro) -->
+      <div class="flex flex-col gap-1.5" *ngIf="esRegistro">
+        <label class="text-slate-400 text-xs font-semibold uppercase tracking-wider">
+          Teléfono
+        </label>
+        <input type="tel"
+               [(ngModel)]="usuario.telefono"
+               name="telefono"
+               placeholder="Ej: 987654321"
+               required
+               class="bg-slate-800 border border-slate-600/50 text-white text-sm 
+                      rounded-xl px-4 py-3 outline-none placeholder-slate-600
+                      focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 
+                      transition-all duration-200">
+      </div>
+
+      <!-- Email (registro y login) -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-slate-400 text-xs font-semibold uppercase tracking-wider">
+          Correo electrónico
+        </label>
+        <input type="email"
+               [(ngModel)]="usuario.email"
+               name="email"
+               placeholder="tu@usil.pe"
+               required
+               class="bg-slate-800 border border-slate-600/50 text-white text-sm 
+                      rounded-xl px-4 py-3 outline-none placeholder-slate-600
+                      focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 
+                      transition-all duration-200">
+      </div>
+
+      <!-- Password -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-slate-400 text-xs font-semibold uppercase tracking-wider">
+          Contraseña
+        </label>
+        <div class="relative">
+          <input [type]="verPassword ? 'text' : 'password'"
+                 [(ngModel)]="usuario.password"
+                 name="password"
+                 placeholder="Mínimo 8 caracteres"
+                 required
+                 class="w-full bg-slate-800 border border-slate-600/50 text-white text-sm 
+                        rounded-xl px-4 py-3 pr-24 outline-none placeholder-slate-600
+                        focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 
+                        transition-all duration-200">
+          <button type="button"
+                  (click)="verPassword = !verPassword"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 
+                         hover:text-blue-400 text-xs font-bold uppercase tracking-wider 
+                         transition-colors duration-200">
+            {{ verPassword ? 'Ocultar' : 'Mostrar' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Confirmar Password (solo registro) -->
+      <div class="flex flex-col gap-1.5" *ngIf="esRegistro">
+        <label class="text-slate-400 text-xs font-semibold uppercase tracking-wider">
+          Confirmar contraseña
+        </label>
+        <div class="relative">
+          <input [type]="verConfirmar ? 'text' : 'password'"
+                 [(ngModel)]="usuario.confirmarPassword"
+                 name="confirmarPassword"
+                 placeholder="Repite tu contraseña"
+                 required
+                 class="w-full bg-slate-800 border border-slate-600/50 text-white text-sm 
+                        rounded-xl px-4 py-3 pr-24 outline-none placeholder-slate-600
+                        focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 
+                        transition-all duration-200">
+          <button type="button"
+                  (click)="verConfirmar = !verConfirmar"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 
+                         hover:text-blue-400 text-xs font-bold uppercase tracking-wider 
+                         transition-colors duration-200">
+            {{ verConfirmar ? 'Ocultar' : 'Mostrar' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit"
+              [disabled]="cargando"
+              class="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 
+                     disabled:text-slate-500 text-white font-bold uppercase tracking-widest 
+                     text-sm rounded-xl py-3.5 mt-2 transition-all duration-200 
+                     shadow-lg shadow-blue-600/20 hover:shadow-blue-500/30">
+        <span *ngIf="!cargando">
+          {{ esRegistro ? 'Crear cuenta y ver diagnóstico →' : 'Ingresar al sistema →' }}
+        </span>
+        <span *ngIf="cargando" class="flex items-center justify-center gap-2">
+          <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+            <circle class="opacity-25" cx="12" cy="12" r="10" 
+                    stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" 
+                  d="M4 12a8 8 0 018-8v8H4z"/>
+          </svg>
+          Procesando...
+        </span>
+      </button>
+
+    </form>
+
+    <!-- Footer toggle -->
+    <div class="text-center mt-6 pt-6 border-t border-slate-700/50">
+      <p class="text-slate-500 text-sm">
+        {{ esRegistro ? '¿Ya tienes una cuenta activa?' : '¿Aún no te has registrado?' }}
+        <span (click)="esRegistro = !esRegistro; errorMsg = ''"
+              class="text-blue-400 hover:text-blue-300 font-semibold 
+                     cursor-pointer ml-1 transition-colors duration-200">
+          {{ esRegistro ? 'Inicia sesión' : 'Regístrate ahora' }}
+        </span>
+      </p>
+    </div>
+
+  </div>
+</div>

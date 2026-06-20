@@ -29,9 +29,11 @@
             </div>
 
             <div class="p-5 flex-grow space-y-1 text-left">
-              <h4 class="text-sm font-bold text-slate-900">Dr(a). {{ medico.nombres }} {{ medico.apellidos }}</h4>
+          <h4 class="text-sm font-bold text-slate-900">
+  Dr(a). {{ medico.nombreProfesional }} {{ medico.apellidoProfesional }}
+</h4>
               <span class="text-[10px] font-bold text-blue-700 uppercase tracking-wider block">{{ medico.especialidad }}</span>
-              <p class="text-slate-500 text-xs leading-relaxed pt-1 font-medium line-clamp-3">{{ medico.descripcion_trayectoria }}</p>
+              <p class="text-slate-500 text-xs leading-relaxed pt-1 font-medium line-clamp-3">{{ medico.descripcion_trayectoria || 'Sin descripción disponible por el momento.' }}</p>
             </div>
 
             <div class="p-5 pt-0">

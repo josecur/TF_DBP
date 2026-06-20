@@ -34,8 +34,9 @@ export class RegistroEspecialistaComponent {
   idiomas = signal<string>('Español');
   publicoObjetivo = signal<string>('MODERADO');
   descripcion = signal<string>('');
+  genero = signal<string>('Femenino'); // 🧬 Nueva señal para el género
 
-  // 📸 Nuevas señales para procesar la subida del archivo físico
+  // 📸 Señales para procesar la subida del archivo físico
   imagenBase64 = signal<string>(''); 
   imagenPrevia = signal<string>('');
 
@@ -93,49 +94,60 @@ export class RegistroEspecialistaComponent {
     }
   }
 
-  // 🚀 Guardado final en la base de datos SQLite a través de Django REST Framework
-  guardarEspecialista() {
-    // Romper cadena si faltan nombres o apellidos
-    const partesNombre = this.nombreCompleto().trim().split(' ');
-    const primerNombre = partesNombre[0] || 'Especialista';
-    const apellidosRestantes = partesNombre.slice(1).join(' ') || 'Profesional';
+guardarEspecialista() {
+  const partesNombre = this.nombreCompleto().trim().split(' ');
+  const primerNombre     = partesNombre[0] || 'Especialista';
+  const apellidosRestantes = partesNombre.slice(1).join(' ') || 'Profesional';
 
-    // Formatear el JSON idéntico a las columnas del modelo de Django
-    const nuevoMedico = {
-      username: this.username(),
-      password_hash: this.password(), 
-      correo: this.correo(),
-      nombres: primerNombre,
-      apellidos: apellidosRestantes,
-      numero_colegiatura: this.colegiatura(),
-      universidad: this.universidad(),
-      especialidad: this.especialidad(),
-      pais: this.pais(),
-      idiomas: this.idiomas(),
-      publico_objetivo: this.publicoObjetivo(),
-      descripcion_trayectoria: this.descripcion(),
-      distorsiones_tratadas: ["CATASTROPHIZING", "MIND_READING"], 
-      telefono: '986575756',
-      enlace_agenda: 'https://wa.me/51986575756',
-      // 🎯 LA CLAVE: Si subió foto mandamos el Base64, sino se inyecta una silueta neutra por defecto
-      avatar_icono: this.imagenBase64() || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'
-    };
+  const nuevoMedico = {
+    nombreProfesional:       primerNombre,
+    apellidoProfesional:     apellidosRestantes,
+    telefonoProfesional:     '986575756',
+    correoProfesional:       this.correo(),
+    clave:                   this.password(),
+    especialidad:            this.especialidad(),
+    universidad:             this.universidad(),
+    avatar_icono:            this.imagenBase64() || '',
+    descripcion_trayectoria: this.descripcion().trim(),
+    enlace_agenda:           'https://wa.me/51986575756',
+    generoProfesional:       this.genero(),
+    validacion:              1
+  };
 
-    // Petición HTTP POST real hacia tu backend
-    this.especialistaService.registrarEspecialista(nuevoMedico).subscribe({
-      next: (respuesta: any) => {
-        alert('¡Registro corporativo guardado exitosamente en SQLite!');
-        
-        // Guardamos en LocalStorage la respuesta que manda Django
-        localStorage.setItem('usuario_especialista', JSON.stringify(respuesta));
-        
-        // Redirección automática inmediata hacia el panel del especialista
-        this.router.navigate(['/dashboard-especialista']); 
-      },
-      error: (err: any) => {
-        console.error('Error al conectar con Django:', err);
-        alert('Error al registrar. Verifica que el usuario o colegiatura no estén duplicados.');
-      }
-    });
-  }
+  this.especialistaService.registrarEspecialista(nuevoMedico).subscribe({
+    next: (respuesta: any) => {
+      // ✅ session_active con TODOS los campos que necesita el panel
+      const sesionCompleta = {
+        rol:                     'especialista',
+        id:                      respuesta.id,
+        nombres:                 respuesta.nombreProfesional,
+        nombreProfesional:       respuesta.nombreProfesional,
+        apellidoProfesional:     respuesta.apellidoProfesional,
+        especialidad:            respuesta.especialidad,
+        avatar_icono:            respuesta.avatar_icono            || '',
+        descripcion_trayectoria: respuesta.descripcion_trayectoria || '',
+        enlace_agenda:           respuesta.enlace_agenda            || '',
+        generoProfesional:       respuesta.generoProfesional        || 'Masculino',
+        validacion:              respuesta.validacion
+      };
+      const sesionParaStorage = { ...sesionCompleta };
+      delete sesionParaStorage.avatar_icono;
+
+      localStorage.setItem('session_active',      JSON.stringify(sesionCompleta));
+      localStorage.setItem('usuario_especialista', JSON.stringify(sesionCompleta));
+      localStorage.setItem('session_active', JSON.stringify(sesionParaStorage));
+
+      alert('¡Registro corporativo enviado con éxito!');
+      this.router.navigate(['/dashboard-especialista'])
+          .then(() => window.location.reload());
+          
+    alert('¡Registro corporativo enviado con éxito!');
+      this.router.navigate(['/dashboard-especialista']);
+    },
+    error: (err: any) => {
+      console.error('Error:', err);
+      alert('Error al registrar. Verifica la conexión con el backend.');
+    }
+  });
+}
 }

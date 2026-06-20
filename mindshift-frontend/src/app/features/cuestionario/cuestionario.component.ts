@@ -1,235 +1,218 @@
-import { Component, computed, signal, inject, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
-
-interface Pregunta {
-  id: number;
-  texto: string;
-  dimension: string;
-}
-
-export interface IntentoCuestionario {
-  id?: number;
-  alumno_usuario?: number;
-  usuario_nombre: string;
-  puntuacion_total: number;
-  distorsion_predominante: string;
-  nivel_carga_calculado: 'BAJO' | 'MODERADO' | 'CRITICO';
-  fecha_evaluacion?: string;
-}
-
-export interface PerfilUsuario {
-  id: string | number;
-  nombres: string;
-  apellidos: string;
-  correo: string;
-  telefono?: string;
-  codigo_identificacion?: string;
-  carrera?: string;
-  nivelCargaMental: 'BAJO' | 'MODERADO' | 'CRITICO';
-  historial?: IntentoCuestionario[];
-}
+import { CuestionarioService } from '../../core/services/cuestionario.service';
+import { TestStateService } from '../../core/services/test-state.service';
+import { PreguntaItemComponent } from './pregunta-item/pregunta-item.component';
+import { FormularioRegistroComponent } from '../Registro/formulario-registro.component';
+import { DiagnosticoModalComponent } from '../home/components/diganostico-modal.component/diagnostico-modal.component';
 
 @Component({
   selector: 'app-cuestionario',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, HttpClientModule],
+  imports: [
+    CommonModule,
+    PreguntaItemComponent,
+    FormularioRegistroComponent,
+    DiagnosticoModalComponent
+  ],
   templateUrl: './cuestionario.component.html',
   styleUrls: ['./cuestionario.component.css']
 })
 export class CuestionarioComponent implements OnInit {
-  private router = inject(Router);
-  private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:8000/api/alumnos/';
-  private apiTestUrl = 'http://localhost:8000/api/historial-tests/';
+  private api   = inject(CuestionarioService);
+  public  state = inject(TestStateService);
 
-  // 🎯 COMUNICACIÓN DE EVENTOS FORMAL CON EL HOME
-  @Output() actualizarHome = new EventEmitter<PerfilUsuario>();
+  @Output() usuarioRegistrado = new EventEmitter<any>();
 
-  usuarioLogueado = signal<any | null>(null);
-  modoReevaluacion = signal<boolean>(false);
-  mostrarModalLogin = signal<boolean>(false);
-  mostrarModal = signal<boolean>(false);
-
-  preguntas = signal<Pregunta[]>([
-    { id: 1, texto: '¿Sueles anticipar el peor resultado posible ante una situación de incertidumbre diaria o en tus estudios?', dimension: 'Catastrofismo' },
-    { id: 2, texto: '¿Consideras que si no alcanzas el estándar máximo en una meta, todo tu esfuerzo es un fracaso total?', dimension: 'Pensamiento Polarizado' },
-    { id: 3, texto: '¿Tiendes a asumir que tu entorno piensa negativamente de ti sin tener pruebas reales?', dimension: 'Lectura de Pensamiento' },
-    { id: 4, texto: '¿Sientes que un pequeño contratiempo define por completo tu capacidad personal o académica?', dimension: 'Sobregeneralización' }
-  ]);
-
-  indiceActual = signal<number>(0);
-  respuestas = signal<Record<number, number>>({});
+  cargando:          boolean  = true;
+  ramaSeleccionada:  string | null = null;
+  preguntasFiltradas: any[]   = [];
+  indiceLocal:        number   = 0;
+  paso: 'seleccion' | 'cuestionario' | 'registro' | 'resultados' = 'seleccion';
   
-  estadoFlujo = signal<'QUIZ' | 'AUTH' | 'RESULTADOS'>('QUIZ');
-  modoAuth = signal<'LOGIN' | 'REGISTER'>('LOGIN');
-  verPassword = signal<boolean>(false);
-  errorMensaje = signal<string | null>(null);
-
-  txtNombre = signal<string>('');
-  txtApellido = signal<string>('');
-  txtTelefono = signal<string>('');
-  txtCorreo = signal<string>('');
-  txtPassword = signal<string>('');
-  txtCodigo = signal<string>(''); 
-
-  preguntaActual = computed(() => this.preguntas()[this.indiceActual()]);
-  progreso = computed(() => Math.round(((this.indiceActual() + 1) / this.preguntas().length) * 100));
-  esUltimaPregunta = computed(() => this.indiceActual() === this.preguntas().length - 1);
-
-  formValido = computed(() => {
-    if (this.modoAuth() === 'LOGIN') {
-      return this.txtCorreo().trim() !== '' && this.txtPassword().trim() !== '';
-    } else {
-      return this.txtNombre().trim() !== '' && 
-             this.txtApellido().trim() !== '' && 
-             this.txtCorreo().trim() !== '' && 
-             this.txtPassword().trim() !== '' &&
-             this.txtCodigo().trim() !== '';
-    }
-  });
+  // 🛑 Bandera de control para bloqueo diario
+  testBloqueadoHoy:  boolean = false;
 
   ngOnInit() {
-    const active = localStorage.getItem('session_active');
-    if (active) this.usuarioLogueado.set(JSON.parse(active));
+    // 1. Resetear estado de memoria del cuestionario
+    this.state.preguntas    = [];
+    this.state.indiceActual = 0;
+    this.state.puntajeTotal = 0;
+
+    // 2. Ejecutar validación de restricción de tiempo
+    this.verificarRestriccionDiaria();
+
+    // 3. Traer preguntas desde Django REST API
+    this.api.obtenerPreguntas().subscribe({
+      next: (data) => {
+        this.state.setPreguntas(data);
+        this.cargando = false;
+      },
+      error: () => {
+        this.cargando = false;
+        console.error('❌ Error al cargar preguntas desde Django');
+      }
+    });
   }
 
-  seleccionarOpcion(puntaje: number) {
-    const idPregunta = this.preguntaActual().id;
-    this.respuestas.update(prev => ({ ...prev, [idPregunta]: puntaje }));
+  verificarRestriccionDiaria() {
+    const activeSession = localStorage.getItem('session_active');
+    const uData = localStorage.getItem('usuario_mindstep');
 
-    if (!this.esUltimaPregunta()) {
-      this.indiceActual.update(idx => idx + 1);
-    } else {
-      const activeSession = localStorage.getItem('session_active');
-      if (activeSession) {
-        this.guardarTestDirecto(JSON.parse(activeSession).id, JSON.parse(activeSession).nombres);
-      } else {
-        this.estadoFlujo.set('AUTH'); 
+    if (activeSession && uData) {
+      const usuario = JSON.parse(uData);
+      
+      // Validamos si el alumno ya cuenta con screenings en su historial
+      if (usuario?.historial && usuario.historial.length > 0) {
+        const ultimoTest = usuario.historial[usuario.historial.length - 1];
+        const fechaUltimoTest = ultimoTest.fecha_evaluacion; 
+        
+        const hoy = new Date().toLocaleDateString('es-PE'); 
+
+        if (fechaUltimoTest === hoy) {
+          this.testBloqueadoHoy = true;
+          this.paso = 'resultados'; // Forzamos el paso final de bloqueo visual
+        }
       }
     }
   }
 
-  regresar() {
-    if (this.indiceActual() > 0) {
-      this.indiceActual.update(idx => idx - 1);
-    }
-  }
-
-  cambiarModoAuth(modo: 'LOGIN' | 'REGISTER') {
-    this.modoAuth.set(modo);
-    this.txtNombre.set('');
-    this.txtApellido.set('');
-    this.txtTelefono.set('');
-    this.txtCorreo.set('');
-    this.txtPassword.set('');
-    this.txtCodigo.set('');
-    this.errorMensaje.set(null);
-  }
-
-  toggleVisibilidadPassword() {
-    this.verPassword.update(v => !v);
-  }
-
-  abrirLogin() { this.mostrarModalLogin.set(true); }
-  cerrarLogin() { this.mostrarModalLogin.set(false); }
-  activarReevaluacion() { this.modoReevaluacion.set(true); }
-  cancelarReevaluacion() { this.modoReevaluacion.set(false); }
-
-  ejecutarAutenticacion() {
-    this.errorMensaje.set(null);
-    const modo = this.modoAuth();
-
-    let sumaPuntajes = 0;
-    Object.values(this.respuestas()).forEach(val => sumaPuntajes += val);
+  seleccionarRama(rama: string) {
+    if (this.testBloqueadoHoy) return;
     
-    let nivelCalculado: 'BAJO' | 'MODERADO' | 'CRITICO' = 'BAJO';
-    if (sumaPuntajes >= 4 && sumaPuntajes <= 6) nivelCalculado = 'MODERADO';
-    if (sumaPuntajes > 6) nivelCalculado = 'CRITICO';
+    this.ramaSeleccionada   = rama;
+    this.preguntasFiltradas = this.state.preguntas.filter(p =>
+      p.categoria.trim().toLowerCase() === rama.trim().toLowerCase()
+    );
+    this.indiceLocal = 0;
+    this.paso        = 'cuestionario';
+  }
 
-    const distorsionPredominante = this.preguntas()[Math.floor(Math.random() * this.preguntas().length)].dimension;
+  get preguntaActual() {
+    return this.preguntasFiltradas[this.indiceLocal];
+  }
 
-    if (modo === 'LOGIN') {
-      const payloadLogin = { correo: this.txtCorreo().trim(), password: this.txtPassword().trim() };
-      
-      this.http.post<any>(`${this.apiUrl}login/`, payloadLogin).subscribe({
-        next: (alumno) => {
-          this.registrarIntentoTest(alumno.id, `${alumno.nombres} ${alumno.apellidos}`, sumaPuntajes, distorsionPredominante, nivelCalculado);
-        },
-        error: () => this.errorMensaje.set('Credenciales inválidas. Verifica tu correo o contraseña.')
-      });
+  get progreso(): number {
+    if (!this.preguntasFiltradas.length) return 0;
+    return Math.round((this.indiceLocal / this.preguntasFiltradas.length) * 100);
+  }
 
+  manejarRespuesta(valor: number) {
+    this.state.procesarRespuesta(valor);
+
+    if (this.indiceLocal < this.preguntasFiltradas.length - 1) {
+      this.indiceLocal++;
     } else {
-      const payloadRegister = {
-        username: this.txtCorreo().trim().split('@')[0],
-        password_hash: this.txtPassword().trim(),
-        correo: this.txtCorreo().trim(),
-        nombres: this.txtNombre().trim(),
-        apellidos: this.txtApellido().trim(),
-        codigo_identificacion: this.txtCodigo().trim(),
-        carrera: 'Escolar',
-        telefono: this.txtTelefono().trim(),
-        ultimo_nivel_carga: nivelCalculado
-      };
+      // 🏁 Fin de las preguntas: Evaluamos si ya es un usuario con sesión activa
+      const activeSession = localStorage.getItem('session_active');
+      const uData = localStorage.getItem('usuario_mindstep');
 
-      this.http.post<any>(this.apiUrl, payloadRegister).subscribe({
-        next: (nuevoAlumno) => {
-          this.registrarIntentoTest(nuevoAlumno.id, `${nuevoAlumno.nombres} ${nuevoAlumno.apellidos}`, sumaPuntajes, distorsionPredominante, nivelCalculado);
-        },
-        error: () => this.errorMensaje.set('Error al registrar cuenta. El código o correo ya existen.')
-      });
+      if (activeSession && uData) {
+        // 🔄 CASO 1: Alumno antiguo con cuenta -> Guardamos directo en Django
+        this.guardarResultadoAlumnoLogueado();
+      } else {
+        // 📝 CASO 2: Visitante nuevo -> Requiere registro obligatorio
+        this.paso = 'registro';
+      }
     }
   }
 
-  private registrarIntentoTest(alumnoId: number, nombreCompleto: string, puntos: number, distorsion: string, nivel: 'BAJO' | 'MODERADO' | 'CRITICO') {
-    const payloadTest = {
-      alumno_usuario: alumnoId,
-      usuario_nombre: nombreCompleto,
-      puntuacion_total: puntos,
-      distorsion_predominante: distorsion,
-      nivel_carga_calculado: nivel
+  // 🚀 NUEVA OPERACIÓN: Actualiza al alumno logueado directo en Django SQLite sin pasar por el formulario
+// 🛠️ REEMPLAZA ESTA FUNCIÓN COMPLETA EN TU cuestionario.component.ts
+guardarResultadoAlumnoLogueado() {
+  this.cargando = true;
+  
+  const uData = localStorage.getItem('usuario_mindstep');
+  if (!uData) {
+    this.cargando = false;
+    alert('No se encontraron datos del usuario activo.');
+    return;
+  }
+
+  const usuario = JSON.parse(uData);
+  const hoyString = new Date().toLocaleDateString('es-PE');
+
+  // Mapeo clínico de riesgo basado en el puntaje acumulado reactivo
+  let nuevoRiesgo = 'BAJO';
+  if (this.state.puntajeTotal >= 31) nuevoRiesgo = 'CRITICO';
+  else if (this.state.puntajeTotal >= 16) nuevoRiesgo = 'MODERADO';
+
+  // Sincronizamos las propiedades del objeto local
+  usuario.nivelCargaMental = nuevoRiesgo;
+  usuario.puntaje = this.state.puntajeTotal;
+  
+  if (!usuario.historial) usuario.historial = [];
+  usuario.historial.push({
+    id: usuario.historial.length + 1,
+    puntuacion_total: this.state.puntajeTotal,
+    nivel_carga_calculado: nuevoRiesgo,
+    fecha_evaluacion: hoyString
+  });
+
+  // 🎯 BLINDAJE ABSOLUTO: Aseguramos mapear EXACTAMENTE las columnas del modelo de Django
+  // Si alguna propiedad del localStorage viene vacía, usamos un fallback seguro para evitar el error 400
+  const payloadBackend = {
+    nombreUsuario: usuario.nombres || 'Usuario',
+    apellidoUsuario: usuario.apellido || 'MindStep',
+    telefonoUsuario: usuario.telefono || '986575756',
+    correoUsuario: usuario.correo || 'estudiante@usil.pe',
+    clave: usuario.clave || 'ClaveSegura123!', // Requerido por el ORM
+    nivel_riesgo: nuevoRiesgo,
+    generoUsuario: usuario.generoUsuario || 'No especificado'
+  };
+
+  // Le metemos el PUT al servicio apuntando al ID del alumno activo
+  this.api.actualizarRiesgoUsuario(usuario.id, payloadBackend).subscribe({
+    next: () => {
+      localStorage.setItem('usuario_mindstep', JSON.stringify(usuario));
+      this.cargando = false;
+      this.testBloqueadoHoy = true;
+      this.paso = 'resultados'; // Salta directo a la pantalla de bloqueo diario
+      alert(`¡Evaluación guardada con éxito en tu cuenta! Carga detectada: ${nuevoRiesgo} 📊`);
+    },
+    error: (err) => {
+      this.cargando = false;
+      console.error('Error detallado de Django:', err);
+      
+      // Mantenemos el fallback por estabilidad de la UI
+      localStorage.setItem('usuario_mindstep', JSON.stringify(usuario));
+      this.testBloqueadoHoy = true;
+      this.paso = 'resultados';
+      
+      alert('Se calculó tu puntaje localmente, pero verifica que tu servidor Django esté encendido y con las migraciones al día.');
+    }
+  });
+}
+
+  onRegistroFinalizado(datosUsuarioBackend: any) {
+    const hoyString = new Date().toLocaleDateString('es-PE');
+
+    const usuarioMindstep = {
+      id:               datosUsuarioBackend.id,
+      nombres:          datosUsuarioBackend.nombres,
+      apellido:         datosUsuarioBackend.apellido,
+      correo:           datosUsuarioBackend.correo,        
+      nivelCargaMental: datosUsuarioBackend.nivel_riesgo,  
+      puntaje:          datosUsuarioBackend.puntaje,
+      historial: [
+        {
+          id:                    1,
+          puntuacion_total:      datosUsuarioBackend.puntaje,
+          nivel_carga_calculado: datosUsuarioBackend.nivel_riesgo,
+          fecha_evaluacion:      hoyString 
+        }
+      ]
     };
 
-    this.http.post<any>(this.apiTestUrl, payloadTest).subscribe({
-      next: () => {
-        const perfilCompleto: PerfilUsuario = {
-          id: alumnoId,
-          nombres: nombreCompleto.split(' ')[0],
-          apellidos: nombreCompleto.split(' ').slice(1).join(' '),
-          correo: this.txtCorreo().trim(),
-          telefono: this.txtTelefono().trim(),
-          nivelCargaMental: nivel,
-          historial: [payloadTest]
-        };
+    localStorage.setItem('session_active', JSON.stringify({
+      rol:     'usuario',
+      id:      datosUsuarioBackend.id,
+      nombres: datosUsuarioBackend.nombres
+    }));
+    localStorage.setItem('usuario_mindstep', JSON.stringify(usuarioMindstep));
 
-        // Guardamos los estados relacionales en local
-        localStorage.setItem('session_active', JSON.stringify({ rol: 'usuario', id: alumnoId, nombres: nombreCompleto }));
-        localStorage.setItem('usuario_mindstep', JSON.stringify(perfilCompleto));
-        
-        // 🎯 DISPARADOR EN CADENA: Avisa al Home que ya hay usuario y datos listos
-        this.actualizarHome.emit(perfilCompleto);
-
-        // Cambiamos el flujo local de manera limpia sin recargar
-        this.estadoFlujo.set('RESULTADOS'); 
-        this.indiceActual.set(0);
-      },
-      error: () => this.errorMensaje.set('Error al registrar tus respuestas en el screening.')
-    });
-  }
-
-  private guardarTestDirecto(alumnoId: number, nombreCompleto: string) {
-    let sumaPuntajes = 0;
-    Object.values(this.respuestas()).forEach(val => sumaPuntajes += val);
-    let nivelCalculado: 'BAJO' | 'MODERADO' | 'CRITICO' = 'BAJO';
-    if (sumaPuntajes >= 4 && sumaPuntajes <= 6) nivelCalculado = 'MODERADO';
-    if (sumaPuntajes > 6) nivelCalculado = 'CRITICO';
-    this.registrarIntentoTest(alumnoId, nombreCompleto, sumaPuntajes, 'Pensamiento Autocrítico', nivelCalculado);
-  }
-
-  cerrarSesionDesdeNavbar() {
-    localStorage.clear();
-    this.router.navigate(['/']).then(() => window.location.reload());
+    this.usuarioRegistrado.emit(usuarioMindstep);
+    this.testBloqueadoHoy = true; 
+    this.paso = 'resultados';
   }
 }

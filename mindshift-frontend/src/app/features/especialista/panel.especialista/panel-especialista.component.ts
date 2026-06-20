@@ -1,171 +1,138 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { ReservaService } from '../../../core/services/reserva.service';
 
 @Component({
   selector: 'app-panel-especialista',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, HttpClientModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './panel-especialista.component.html',
   styleUrls: ['./panel-especialista.component.css']
 })
 export class PanelEspecialistaComponent implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
-  private apiUrl = 'http://localhost:8000/api';
+  private reservaService = inject(ReservaService);
 
+  // Estados de modales
+  mostrarPopupMedios = signal<boolean>(false);
+  mediosContacto = { correo: '', whatsapp: '' };
+  idReservaTemporal: number | null = null; // Guardamos el ID aquí para que no se pierda
+  
+  // Datos
   medico = signal<any | null>(null);
   consultas = signal<any[]>([]);
+  citaParaRevisar = signal<any | null>(null);
 
-  // Campos amarrados a los inputs mediante NgModel
+  // Formularios
   formNombres = '';
   formApellidos = '';
-  formTrayectoria = '';
   formAgenda = '';
-  formAvatar = ''; // Almacenará la cadena Base64 de la foto
-
-  // Gestión de contraseñas
-  formContra = '';
-  formContraConfirmar = '';
-
-  // Campos para redactar artículos
+  formTrayectoria = '';
+  formAvatar = '';
+  
   nuevoTitulo = '';
   nuevoContenido = '';
 
   ngOnInit() {
-    const sesion = localStorage.getItem('usuario_especialista');
-    if (!sesion) {
-      this.router.navigate(['/']);
-      return;
-    }
+    const sesion = localStorage.getItem('session_active');
+    if (!sesion) { this.router.navigate(['/']); return; }
+
+    const datosMedicos = JSON.parse(sesion);
+    this.medico.set(datosMedicos);
     
-    const medicoData = JSON.parse(sesion);
-    this.medico.set(medicoData);
-    this.inicializarFormulario(medicoData);
-    this.cargarConsultasAlumnos(medicoData.id);
+    this.formNombres = datosMedicos.nombreProfesional || '';
+    this.formApellidos = datosMedicos.apellidoProfesional || '';
+    this.formAgenda = datosMedicos.enlace_agenda || '';
+    this.formTrayectoria = datosMedicos.descripcion_trayectoria || '';
+    this.formAvatar = datosMedicos.avatar_icono || '';
+
+    this.cargarSolicitudesDeEnlace();
   }
 
-  inicializarFormulario(m: any) {
-    this.formNombres = m.nombres || '';
-    this.formApellidos = m.apellidos || '';
-    this.formTrayectoria = m.descripcion_trayectoria || '';
-    this.formAgenda = m.enlace_agenda || '';
-    this.formAvatar = m.avatar_icono || ''; // Inicializa la foto actual desde SQLite
-  }
-
-  // 📥 LECTOR DE BITS: Convierte la foto local subida a Base64 para guardarla en el TextField de Django
-  alCambiarFotoPerfil(event: any) {
-    const archivo: File = event.target.files[0];
-    if (archivo) {
-      if (!archivo.type.startsWith('image/')) {
-        alert('Selecciona un archivo de imagen válido.');
-        return;
+  cargarSolicitudesDeEnlace() {
+    this.reservaService.obtenerTodasLasReservas().subscribe({
+      next: (lista: any[]) => {
+        const idMedico = Number(this.medico()?.id);
+        this.consultas.set(lista.filter(c => Number(c.idProfesional) === idMedico));
       }
-      const lector = new FileReader();
-      lector.onload = () => {
-        this.formAvatar = lector.result as string; // Actualiza la miniatura en caliente en la UI
-      };
-      lector.readAsDataURL(archivo);
-    }
-  }
-
-  // 🎯 MAPEADO RELACIONAL: Jala y limpia las citas que los usuarios generen en el Front
-  cargarConsultasAlumnos(medicoId: number) {
-    this.http.get<any[]>(`${this.apiUrl}/consultas/`).subscribe({
-      next: (res) => {
-        // Filtrar las solicitudes express dirigidas a este especialista
-        const filtradas = res.filter(c => c.especialista === medicoId);
-        
-        // Formateo preventivo para que el template HTML lea el string de nombres sin problemas
-        const mapeadas = filtradas.map(c => ({
-          ...c,
-          alumno_nombre: c.alumno_nombre || (c.alumno_usuario_detalle?.nombres + ' ' + c.alumno_usuario_detalle?.apellidos),
-          alumno_correo: c.alumno_correo || c.alumno_usuario_detalle?.correo
-        }));
-
-        this.consultas.set(mapeadas);
-      },
-      error: (err) => console.error('Error al sincronizar alumnos desde SQLite:', err)
     });
   }
+
+  abrirModalDiagnostico(cita: any) { 
+    this.citaParaRevisar.set(cita); 
+  }
+
+  // PASO 1: Iniciar el proceso de vinculación
+ atenderConsulta() {
+    const cita = this.citaParaRevisar();
+    if (!cita) return;
+    
+    this.idReservaTemporal = cita.id; // Guardamos el ID en la propiedad temporal
+    this.citaParaRevisar.set(null);   // Cerramos el primer modal
+    this.mostrarPopupMedios.set(true); // Abrimos el segundo
+  }
+
+// En panel-especialista.component.ts
+finalizarVinculacion() {
+  const id = this.idReservaTemporal;
+  if (!id) return;
+
+  const payload = {
+    estado: 'Aceptado',
+    contacto_correo: this.mediosContacto.correo,
+    contacto_whatsapp: this.mediosContacto.whatsapp
+  };
+
+  // CAMBIA .put POR .patch
+  // El PATCH es específicamente para actualizaciones parciales
+  this.http.patch(`http://localhost:8000/api/reservas/${id}/`, payload).subscribe({
+    next: () => {
+      alert('¡Vinculación confirmada!');
+      this.mostrarPopupMedios.set(false);
+      this.cargarSolicitudesDeEnlace();
+    },
+    error: (err) => console.log('Error:', err.error)
+  });
+}
 
   guardarPerfil() {
-    const id = this.medico()?.id;
     const payload = {
-      ...this.medico(),
-      nombres: this.formNombres,
-      apellidos: this.formApellidos,
-      descripcion_trayectoria: this.formTrayectoria,
+      nombreProfesional: this.formNombres,
+      apellidoProfesional: this.formApellidos,
       enlace_agenda: this.formAgenda,
-      avatar_icono: this.formAvatar // Se envía la cadena binaria completa a la BD
+      descripcion_trayectoria: this.formTrayectoria,
+      avatar_icono: this.formAvatar
     };
-
-    this.http.put(`${this.apiUrl}/especialistas/${id}/`, payload).subscribe({
+    this.http.put(`http://localhost:8000/api/profesionales/${this.medico().id}/`, payload).subscribe({
       next: (res: any) => {
-        this.medico.set(res);
-        localStorage.setItem('usuario_especialista', JSON.stringify(res));
-        
-        // Actualizar la navbar global de inmediato
-        localStorage.setItem('session_active', JSON.stringify({ 
-          rol: 'especialista', 
-          nombres: `${res.nombres} ${res.apellidos}` 
-        }));
-
-        alert('¡Perfil y foto actualizados en SQLite con éxito!');
-      },
-      error: (err) => alert('Error al actualizar los datos en el backend.')
-    });
-  }
-
-  actualizarContrasena() {
-    if (!this.formContra || this.formContra !== this.formContraConfirmar) return;
-    const id = this.medico()?.id;
-    
-    this.http.post(`${this.apiUrl}/especialistas/${id}/cambiar-contra/`, { nueva_contrasena: this.formContra }).subscribe({
-      next: () => {
-        this.formContra = '';
-        this.formContraConfirmar = '';
-        alert('¡Tu contraseña ha sido cambiada con éxito!');
-      },
-      error: (err) => alert('Error al procesar el cambio de contraseña.')
+        const sesionActualizada = { ...this.medico(), ...res };
+        localStorage.setItem('session_active', JSON.stringify(sesionActualizada));
+        this.medico.set(sesionActualizada);
+        alert('Perfil actualizado.');
+      }
     });
   }
 
   publicarArticulo() {
-    if (!this.nuevoTitulo || !this.nuevoContenido) return;
-    
-    const payload = {
-      especialista_id: this.medico()?.id,
+    this.http.post('http://localhost:8000/api/publicaciones/', {
+      idProfesional: this.medico().id,
       titulo: this.nuevoTitulo,
-      contenido: this.nuevoContenido,
-      categoria: 'Carga Mental Universitaria'
-    };
-
-    this.http.post(`${this.apiUrl}/publicaciones/`, payload).subscribe({
-      next: () => {
-        this.nuevoTitulo = '';
-        this.nuevoContenido = '';
-        alert('¡Artículo lanzado con éxito al muro público!');
-      },
-      error: (err) => alert('Error al registrar la publicación.')
-    });
+      contenido: this.nuevoContenido
+    }).subscribe({ next: () => alert('Publicado!') });
   }
 
-  atenderConsulta(consultaId: number) {
-    this.http.patch(`${this.apiUrl}/consultas/${consultaId}/`, { estado: 'ATENDIDO' }).subscribe({
-      next: () => {
-        // Refrescar la lista de derivados al instante
-        this.cargarConsultasAlumnos(this.medico()?.id);
-      },
-      error: (err) => console.error(err)
-    });
+  alCambiarFotoPerfil(event: any) {
+    const archivo = event.target.files[0];
+    if (archivo) {
+      const lector = new FileReader();
+      lector.onload = () => this.formAvatar = lector.result as string;
+      lector.readAsDataURL(archivo);
+    }
   }
 
-  cerrarSesion() {
-    localStorage.removeItem('usuario_especialista');
-    localStorage.removeItem('session_active');
-    this.router.navigate(['/']).then(() => window.location.reload());
-  }
+  cerrarSesion() { localStorage.removeItem('session_active'); this.router.navigate(['/']); }
 }
