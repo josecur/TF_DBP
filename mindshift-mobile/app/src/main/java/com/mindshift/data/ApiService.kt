@@ -9,9 +9,11 @@ import com.mindshift.data.model.RegistroResponse
 import com.mindshift.data.model.ReservaDto
 import com.mindshift.data.model.ReservaRequest
 import com.mindshift.data.model.ReservaResponse
+import com.mindshift.data.model.ReservaUpdateRequest
 import com.mindshift.data.model.UsuarioLoginResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -44,4 +46,10 @@ interface ApiService {
 
     @GET("api/reservas/")
     suspend fun getReservasUsuario(@Query("idUsuario") idUsuario: Long): List<ReservaDto>
+
+    @GET("api/reservas/por-profesional")
+    suspend fun getReservasProfesional(@Query("idProfesional") idProfesional: Long): List<ReservaDto>
+
+    @PATCH("api/reservas/{id}/")
+    suspend fun aceptarReserva(@Path("id") id: Long, @Body req: ReservaUpdateRequest): ReservaResponse
 }

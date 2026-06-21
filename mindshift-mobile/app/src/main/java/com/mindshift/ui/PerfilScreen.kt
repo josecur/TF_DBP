@@ -28,6 +28,7 @@ fun PerfilScreen(
     onIrLogin: () -> Unit,
     onIrRegistro: () -> Unit,
     onIrMisCitas: () -> Unit,
+    onIrPanel: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: PerfilViewModel = viewModel()
 ) {
@@ -84,6 +85,11 @@ fun PerfilScreen(
             if (s.rol == "usuario") {
                 OutlinedButton(onClick = onIrMisCitas, modifier = Modifier.fillMaxWidth()) {
                     Text("Mis citas")
+                }
+            }
+            if (s.rol == "especialista") {
+                OutlinedButton(onClick = onIrPanel, modifier = Modifier.fillMaxWidth()) {
+                    Text("Solicitudes de cita")
                 }
             }
 

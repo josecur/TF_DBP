@@ -120,3 +120,8 @@ data class ReservaDto(
     val medico_nombre: String,
     val medico_contacto: Map<String, String?>?
 )
+
+/** Cuerpo para que el especialista acepte una reserva (PATCH parcial). */
+data class ReservaUpdateRequest(
+    val estado: String
+)
