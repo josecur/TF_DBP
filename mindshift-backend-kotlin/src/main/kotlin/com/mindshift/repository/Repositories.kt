@@ -1,6 +1,7 @@
 package com.mindshift.repository
 
 import com.mindshift.model.Escenario
+import com.mindshift.model.Evaluacion
 import com.mindshift.model.Opciones
 import com.mindshift.model.Profesional
 import com.mindshift.model.Reserva
@@ -40,4 +41,8 @@ interface ReservaRepository : JpaRepository<Reserva, Long> {
     fun findByUsuarioIdOrderByFechaDesc(usuarioId: Long): List<Reserva>
 
     fun findByProfesionalIdOrderByFechaDesc(profesionalId: Long): List<Reserva>
+}
+
+interface EvaluacionRepository : JpaRepository<Evaluacion, Long> {
+    fun findByUsuarioIdOrderByFechaDesc(usuarioId: Long): List<Evaluacion>
 }

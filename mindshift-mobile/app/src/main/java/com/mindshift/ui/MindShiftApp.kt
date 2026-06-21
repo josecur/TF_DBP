@@ -51,6 +51,7 @@ fun MindShiftApp() {
         "login" -> "Iniciar sesión"
         "registro" -> "Crear cuenta"
         "mis-citas" -> "Mis citas"
+        "historial" -> "Mi historial"
         "panel-especialista" -> "Solicitudes de cita"
         else -> if (esDetalleEspecialista) "Perfil del especialista"
         else (Destino.entries.firstOrNull { it.ruta == rutaActual } ?: Destino.INICIO).titulo
@@ -74,7 +75,7 @@ fun MindShiftApp() {
                 Destino.entries.forEach { destino ->
                     val seleccionado = rutaActual == destino.ruta ||
                         (destino == Destino.ESPECIALISTAS && esDetalleEspecialista) ||
-                        (destino == Destino.PERFIL && (rutaActual == "login" || rutaActual == "registro" || rutaActual == "mis-citas" || rutaActual == "panel-especialista"))
+                        (destino == Destino.PERFIL && (rutaActual == "login" || rutaActual == "registro" || rutaActual == "mis-citas" || rutaActual == "historial" || rutaActual == "panel-especialista"))
                     NavigationBarItem(
                         selected = seleccionado,
                         onClick = {
@@ -112,10 +113,12 @@ fun MindShiftApp() {
                     onIrLogin = { navController.navigate("login") },
                     onIrRegistro = { navController.navigate("registro") },
                     onIrMisCitas = { navController.navigate("mis-citas") },
-                    onIrPanel = { navController.navigate("panel-especialista") }
+                    onIrPanel = { navController.navigate("panel-especialista") },
+                    onIrHistorial = { navController.navigate("historial") }
                 )
             }
             composable("mis-citas") { MisCitasScreen() }
+            composable("historial") { HistorialScreen() }
             composable("panel-especialista") { PanelEspecialistaScreen() }
             composable(RUTA_DETALLE) { EspecialistaDetalleScreen() }
             composable("login") {

@@ -212,7 +212,7 @@ private fun ErrorView(mensaje: String, onRetry: () -> Unit) {
     }
 }
 
-private fun nombreBonito(categoria: String): String = when (categoria) {
+internal fun nombreBonito(categoria: String): String = when (categoria) {
     "ansiedad_social" -> "Ansiedad social"
     "tdah_burnout" -> "TDAH / Burnout"
     "depresion_apatia" -> "Depresión / Apatía"

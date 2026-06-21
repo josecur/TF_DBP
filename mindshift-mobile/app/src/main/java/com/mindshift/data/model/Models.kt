@@ -125,3 +125,22 @@ data class ReservaDto(
 data class ReservaUpdateRequest(
     val estado: String
 )
+
+// --- Historial de evaluaciones ---
+
+/** Cuerpo para registrar una evaluación del cuestionario (la fecha la pone el backend). */
+data class EvaluacionRequest(
+    val idUsuario: Long,
+    val puntaje: Int,
+    val nivel: String,
+    val categoria: String?
+)
+
+data class EvaluacionDto(
+    val id: Long,
+    val idUsuario: Long?,
+    val puntaje: Int,
+    val nivel: String,
+    val categoria: String?,
+    val fecha: String?
+)

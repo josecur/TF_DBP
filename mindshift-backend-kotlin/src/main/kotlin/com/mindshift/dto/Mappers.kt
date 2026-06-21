@@ -1,6 +1,7 @@
 package com.mindshift.dto
 
 import com.mindshift.model.Escenario
+import com.mindshift.model.Evaluacion
 import com.mindshift.model.Opciones
 import com.mindshift.model.Profesional
 import com.mindshift.model.Reserva
@@ -46,6 +47,15 @@ fun Profesional.toDto() = ProfesionalDto(
     descripcion_trayectoria = descripcionTrayectoria,
     enlace_agenda = enlaceAgenda,
     generoProfesional = generoProfesional
+)
+
+fun Evaluacion.toDto() = EvaluacionDto(
+    id = id,
+    idUsuario = usuario?.id,
+    puntaje = puntaje,
+    nivel = nivel,
+    categoria = categoria,
+    fecha = fecha
 )
 
 fun Reserva.toDto(): ReservaDto {

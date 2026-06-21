@@ -1,12 +1,16 @@
 package com.mindshift.ui
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.mindshift.data.ApiClient
+import com.mindshift.data.SessionManager
 import com.mindshift.data.model.Escenario
+import com.mindshift.data.model.EvaluacionRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -39,8 +43,11 @@ data class CuestionarioState(
 /**
  * Lógica del cuestionario. Reemplaza a CuestionarioComponent + TestStateService del frontend Angular:
  * carga los escenarios, filtra por categoría, acumula el puntaje y calcula el nivel de riesgo.
+ * Al terminar, si hay sesión de usuario, guarda la evaluación (historial).
  */
-class CuestionarioViewModel : ViewModel() {
+class CuestionarioViewModel(app: Application) : AndroidViewModel(app) {
+
+    private val sm = SessionManager(app)
 
     private val _state = MutableStateFlow(CuestionarioState())
     val state: StateFlow<CuestionarioState> = _state.asStateFlow()
@@ -80,12 +87,34 @@ class CuestionarioViewModel : ViewModel() {
     }
 
     fun responder(valorPuntos: Int) {
-        _state.update { s ->
-            val nuevoPuntaje = s.puntaje + valorPuntos
-            if (s.indice < s.preguntas.size - 1) {
-                s.copy(puntaje = nuevoPuntaje, indice = s.indice + 1)
-            } else {
-                s.copy(puntaje = nuevoPuntaje, paso = Paso.RESULTADO)
+        val s = _state.value
+        val nuevoPuntaje = s.puntaje + valorPuntos
+        if (s.indice < s.preguntas.size - 1) {
+            _state.value = s.copy(puntaje = nuevoPuntaje, indice = s.indice + 1)
+        } else {
+            val finalState = s.copy(puntaje = nuevoPuntaje, paso = Paso.RESULTADO)
+            _state.value = finalState
+            guardarEvaluacion(finalState)
+        }
+    }
+
+    /** Guarda la evaluación si el usuario tiene sesión activa (silencioso si falla o no hay sesión). */
+    private fun guardarEvaluacion(s: CuestionarioState) {
+        viewModelScope.launch {
+            try {
+                val sesion = sm.sesion.first()
+                if (sesion != null && sesion.rol == "usuario") {
+                    ApiClient.service.crearEvaluacion(
+                        EvaluacionRequest(
+                            idUsuario = sesion.id,
+                            puntaje = s.puntaje,
+                            nivel = s.nivelRiesgo,
+                            categoria = s.categoria
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                // No bloquea la UI del resultado.
             }
         }
     }

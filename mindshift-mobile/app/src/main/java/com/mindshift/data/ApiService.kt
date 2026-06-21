@@ -1,6 +1,8 @@
 package com.mindshift.data
 
 import com.mindshift.data.model.Escenario
+import com.mindshift.data.model.EvaluacionDto
+import com.mindshift.data.model.EvaluacionRequest
 import com.mindshift.data.model.LoginRequest
 import com.mindshift.data.model.Profesional
 import com.mindshift.data.model.ProfesionalLoginResponse
@@ -52,4 +54,10 @@ interface ApiService {
 
     @PATCH("api/reservas/{id}/")
     suspend fun aceptarReserva(@Path("id") id: Long, @Body req: ReservaUpdateRequest): ReservaResponse
+
+    @POST("api/evaluaciones/")
+    suspend fun crearEvaluacion(@Body req: EvaluacionRequest): EvaluacionDto
+
+    @GET("api/evaluaciones/")
+    suspend fun getEvaluaciones(@Query("idUsuario") idUsuario: Long): List<EvaluacionDto>
 }
