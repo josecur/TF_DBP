@@ -35,3 +35,53 @@ data class Profesional(
     val enlace_agenda: String?,
     val generoProfesional: String?
 )
+
+// --- Autenticación (mismos cuerpos/JSON que el backend) ---
+
+/** POST /login/ usa `username` (el correo) + `password`. */
+data class LoginRequest(
+    val username: String,
+    val password: String
+)
+
+data class UsuarioLoginResponse(
+    val status: String,
+    val id: Long,
+    val nombres: String,
+    val apellido: String,
+    val correo: String,
+    val nivel_riesgo: String?
+)
+
+/** POST /api/usuarios/registro/ — mismo shape que el formulario Angular. */
+data class RegistroRequest(
+    val nombre: String,
+    val apellido: String,
+    val email: String,
+    val telefono: String,
+    val password: String,
+    val puntaje: Int
+)
+
+data class RegistroResponse(
+    val status: String,
+    val id: Long,
+    val nombres: String,
+    val apellido: String,
+    val correo: String,
+    val nivel_riesgo: String?,
+    val puntaje: Int
+)
+
+data class ProfesionalLoginResponse(
+    val status: String,
+    val id: Long,
+    val nombreProfesional: String,
+    val apellidoProfesional: String,
+    val especialidad: String,
+    val validacion: Int,
+    val avatar_icono: String?,
+    val descripcion_trayectoria: String?,
+    val enlace_agenda: String?,
+    val generoProfesional: String?
+)

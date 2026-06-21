@@ -47,9 +47,11 @@ fun MindShiftApp() {
 
     val esDetalleEspecialista = rutaActual?.startsWith("especialista/") == true
     val esTopLevel = Destino.entries.any { it.ruta == rutaActual }
-    val titulo = when {
-        esDetalleEspecialista -> "Perfil del especialista"
-        else -> (Destino.entries.firstOrNull { it.ruta == rutaActual } ?: Destino.INICIO).titulo
+    val titulo = when (rutaActual) {
+        "login" -> "Iniciar sesión"
+        "registro" -> "Crear cuenta"
+        else -> if (esDetalleEspecialista) "Perfil del especialista"
+        else (Destino.entries.firstOrNull { it.ruta == rutaActual } ?: Destino.INICIO).titulo
     }
 
     Scaffold(
@@ -69,7 +71,8 @@ fun MindShiftApp() {
             NavigationBar {
                 Destino.entries.forEach { destino ->
                     val seleccionado = rutaActual == destino.ruta ||
-                        (destino == Destino.ESPECIALISTAS && esDetalleEspecialista)
+                        (destino == Destino.ESPECIALISTAS && esDetalleEspecialista) ||
+                        (destino == Destino.PERFIL && (rutaActual == "login" || rutaActual == "registro"))
                     NavigationBarItem(
                         selected = seleccionado,
                         onClick = {
@@ -102,8 +105,25 @@ fun MindShiftApp() {
             composable(Destino.ESPECIALISTAS.ruta) {
                 EspecialistasScreen(onVerDetalle = { id -> navController.navigate("especialista/$id") })
             }
-            composable(Destino.PERFIL.ruta) { PerfilScreen() }
+            composable(Destino.PERFIL.ruta) {
+                PerfilScreen(
+                    onIrLogin = { navController.navigate("login") },
+                    onIrRegistro = { navController.navigate("registro") }
+                )
+            }
             composable(RUTA_DETALLE) { EspecialistaDetalleScreen() }
+            composable("login") {
+                LoginScreen(
+                    onExito = { navController.popBackStack(Destino.PERFIL.ruta, inclusive = false) },
+                    onIrRegistro = { navController.navigate("registro") }
+                )
+            }
+            composable("registro") {
+                RegistroScreen(
+                    onExito = { navController.popBackStack(Destino.PERFIL.ruta, inclusive = false) },
+                    onVolver = { navController.popBackStack() }
+                )
+            }
         }
     }
 }

@@ -1,13 +1,19 @@
 package com.mindshift.data
 
 import com.mindshift.data.model.Escenario
+import com.mindshift.data.model.LoginRequest
 import com.mindshift.data.model.Profesional
+import com.mindshift.data.model.ProfesionalLoginResponse
+import com.mindshift.data.model.RegistroRequest
+import com.mindshift.data.model.RegistroResponse
+import com.mindshift.data.model.UsuarioLoginResponse
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.Path
 
 /**
  * Definición de los endpoints del backend (equivale a los servicios HTTP de Angular).
- * Iremos agregando login, reservas, etc.
  */
 interface ApiService {
 
@@ -19,4 +25,13 @@ interface ApiService {
 
     @GET("api/profesionales/{id}/")
     suspend fun getProfesional(@Path("id") id: Long): Profesional
+
+    @POST("api/usuarios/login/")
+    suspend fun loginUsuario(@Body req: LoginRequest): UsuarioLoginResponse
+
+    @POST("api/usuarios/registro/")
+    suspend fun registroUsuario(@Body req: RegistroRequest): RegistroResponse
+
+    @POST("api/profesionales/login/")
+    suspend fun loginProfesional(@Body req: LoginRequest): ProfesionalLoginResponse
 }
