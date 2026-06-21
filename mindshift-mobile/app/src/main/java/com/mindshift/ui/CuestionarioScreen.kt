@@ -18,10 +18,8 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -40,27 +38,18 @@ fun CuestionarioScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    Scaffold(
-        modifier = modifier,
-        topBar = { TopAppBar(title = { Text("MindShift") }) }
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-        ) {
-            when {
-                state.cargando ->
-                    CircularProgressIndicator(Modifier.align(Alignment.Center))
+    Box(modifier = modifier.fillMaxSize()) {
+        when {
+            state.cargando ->
+                CircularProgressIndicator(Modifier.align(Alignment.Center))
 
-                state.error != null ->
-                    ErrorView(state.error!!, onRetry = viewModel::cargar)
+            state.error != null ->
+                ErrorView(state.error!!, onRetry = viewModel::cargar)
 
-                else -> when (state.paso) {
-                    Paso.SELECCION -> SeleccionView(state.categorias, viewModel::seleccionarCategoria)
-                    Paso.CUESTIONARIO -> PreguntaView(state, viewModel::responder)
-                    Paso.RESULTADO -> ResultadoView(state, viewModel::reiniciar)
-                }
+            else -> when (state.paso) {
+                Paso.SELECCION -> SeleccionView(state.categorias, viewModel::seleccionarCategoria)
+                Paso.CUESTIONARIO -> PreguntaView(state, viewModel::responder)
+                Paso.RESULTADO -> ResultadoView(state, viewModel::reiniciar)
             }
         }
     }
