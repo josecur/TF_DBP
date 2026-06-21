@@ -3,6 +3,7 @@
 package com.mindshift.ui
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -31,24 +32,46 @@ enum class Destino(
     PERFIL("perfil", "Perfil", "Mi perfil", "👤")
 }
 
+/** Ruta de detalle (no aparece en la barra inferior; se llega desde la lista de especialistas). */
+private const val RUTA_DETALLE = "especialista/{id}"
+
 /**
  * Contenedor principal: barra de navegación inferior + NavHost que conmuta entre secciones.
- * El TopAppBar muestra el título de la sección activa.
+ * El TopAppBar muestra el título de la sección activa y un botón de volver en las subpantallas.
  */
 @Composable
 fun MindShiftApp() {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val rutaActual = backStackEntry?.destination?.route
-    val destinoActual = Destino.entries.firstOrNull { it.ruta == rutaActual } ?: Destino.INICIO
+
+    val esDetalleEspecialista = rutaActual?.startsWith("especialista/") == true
+    val esTopLevel = Destino.entries.any { it.ruta == rutaActual }
+    val titulo = when {
+        esDetalleEspecialista -> "Perfil del especialista"
+        else -> (Destino.entries.firstOrNull { it.ruta == rutaActual } ?: Destino.INICIO).titulo
+    }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text(destinoActual.titulo) }) },
+        topBar = {
+            TopAppBar(
+                title = { Text(titulo) },
+                navigationIcon = {
+                    if (!esTopLevel && rutaActual != null) {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Text("←", fontSize = 22.sp)
+                        }
+                    }
+                }
+            )
+        },
         bottomBar = {
             NavigationBar {
                 Destino.entries.forEach { destino ->
+                    val seleccionado = rutaActual == destino.ruta ||
+                        (destino == Destino.ESPECIALISTAS && esDetalleEspecialista)
                     NavigationBarItem(
-                        selected = rutaActual == destino.ruta,
+                        selected = seleccionado,
                         onClick = {
                             navController.navigate(destino.ruta) {
                                 // Evita apilar la misma pantalla y conserva el estado de cada pestaña
@@ -76,8 +99,11 @@ fun MindShiftApp() {
                 )
             }
             composable(Destino.TEST.ruta) { CuestionarioScreen() }
-            composable(Destino.ESPECIALISTAS.ruta) { EspecialistasScreen() }
+            composable(Destino.ESPECIALISTAS.ruta) {
+                EspecialistasScreen(onVerDetalle = { id -> navController.navigate("especialista/$id") })
+            }
             composable(Destino.PERFIL.ruta) { PerfilScreen() }
+            composable(RUTA_DETALLE) { EspecialistaDetalleScreen() }
         }
     }
 }

@@ -15,19 +15,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /**
- * Pantallas aún por construir (próximos incrementos): especialistas y perfil.
- * Por ahora muestran un marcador para que la navegación quede completa.
+ * Pantalla aún por construir (próximo incremento): el perfil del usuario.
+ * Por ahora muestra un marcador para que la navegación quede completa.
  */
-
-@Composable
-fun EspecialistasScreen(modifier: Modifier = Modifier) {
-    Placeholder(
-        modifier = modifier,
-        emoji = "🩺",
-        titulo = "Especialistas",
-        mensaje = "Aquí listaremos a los especialistas disponibles y podrás solicitar una cita. (Próximo incremento.)"
-    )
-}
 
 @Composable
 fun PerfilScreen(modifier: Modifier = Modifier) {

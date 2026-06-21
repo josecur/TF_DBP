@@ -20,3 +20,18 @@ data class Escenario(
     val orden: Int,
     val opciones: List<Opcion>
 )
+
+data class Profesional(
+    val id: Long,
+    val nombreProfesional: String,
+    val apellidoProfesional: String,
+    val telefonoProfesional: String,
+    val correoProfesional: String,
+    val especialidad: String,
+    val validacion: Int,
+    val universidad: String,
+    val avatar_icono: String?,
+    val descripcion_trayectoria: String?,
+    val enlace_agenda: String?,
+    val generoProfesional: String?
+)
