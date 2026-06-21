@@ -6,6 +6,8 @@ import com.mindshift.data.model.Profesional
 import com.mindshift.data.model.ProfesionalLoginResponse
 import com.mindshift.data.model.RegistroRequest
 import com.mindshift.data.model.RegistroResponse
+import com.mindshift.data.model.ReservaRequest
+import com.mindshift.data.model.ReservaResponse
 import com.mindshift.data.model.UsuarioLoginResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -34,4 +36,7 @@ interface ApiService {
 
     @POST("api/profesionales/login/")
     suspend fun loginProfesional(@Body req: LoginRequest): ProfesionalLoginResponse
+
+    @POST("api/reservas/")
+    suspend fun crearReserva(@Body req: ReservaRequest): ReservaResponse
 }

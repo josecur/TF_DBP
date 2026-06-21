@@ -85,3 +85,20 @@ data class ProfesionalLoginResponse(
     val enlace_agenda: String?,
     val generoProfesional: String?
 )
+
+// --- Reservas ---
+
+/** POST /api/reservas/ — solicitar una cita. `fecha` en ISO-8601 (ej. Instant.now().toString()). */
+data class ReservaRequest(
+    val idUsuario: Long,
+    val idProfesional: Long,
+    val motivo: String,
+    val fecha: String,
+    val estado: String
+)
+
+/** Respuesta de la reserva creada (solo se usan id y estado; Gson ignora el resto). */
+data class ReservaResponse(
+    val id: Long,
+    val estado: String
+)
