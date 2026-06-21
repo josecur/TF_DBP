@@ -27,6 +27,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun PerfilScreen(
     onIrLogin: () -> Unit,
     onIrRegistro: () -> Unit,
+    onIrMisCitas: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: PerfilViewModel = viewModel()
 ) {
@@ -79,6 +80,12 @@ fun PerfilScreen(
             if (s.correo.isNotBlank()) Fila("Correo", s.correo)
             if (s.rol == "usuario" && !s.nivelRiesgo.isNullOrBlank()) Fila("Nivel de carga", s.nivelRiesgo)
             if (s.rol == "especialista" && !s.especialidad.isNullOrBlank()) Fila("Especialidad", s.especialidad)
+
+            if (s.rol == "usuario") {
+                OutlinedButton(onClick = onIrMisCitas, modifier = Modifier.fillMaxWidth()) {
+                    Text("Mis citas")
+                }
+            }
 
             Spacer(Modifier.weight(1f))
 

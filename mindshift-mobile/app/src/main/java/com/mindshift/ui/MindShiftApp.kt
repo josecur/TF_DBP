@@ -50,6 +50,7 @@ fun MindShiftApp() {
     val titulo = when (rutaActual) {
         "login" -> "Iniciar sesión"
         "registro" -> "Crear cuenta"
+        "mis-citas" -> "Mis citas"
         else -> if (esDetalleEspecialista) "Perfil del especialista"
         else (Destino.entries.firstOrNull { it.ruta == rutaActual } ?: Destino.INICIO).titulo
     }
@@ -72,7 +73,7 @@ fun MindShiftApp() {
                 Destino.entries.forEach { destino ->
                     val seleccionado = rutaActual == destino.ruta ||
                         (destino == Destino.ESPECIALISTAS && esDetalleEspecialista) ||
-                        (destino == Destino.PERFIL && (rutaActual == "login" || rutaActual == "registro"))
+                        (destino == Destino.PERFIL && (rutaActual == "login" || rutaActual == "registro" || rutaActual == "mis-citas"))
                     NavigationBarItem(
                         selected = seleccionado,
                         onClick = {
@@ -108,9 +109,11 @@ fun MindShiftApp() {
             composable(Destino.PERFIL.ruta) {
                 PerfilScreen(
                     onIrLogin = { navController.navigate("login") },
-                    onIrRegistro = { navController.navigate("registro") }
+                    onIrRegistro = { navController.navigate("registro") },
+                    onIrMisCitas = { navController.navigate("mis-citas") }
                 )
             }
+            composable("mis-citas") { MisCitasScreen() }
             composable(RUTA_DETALLE) { EspecialistaDetalleScreen() }
             composable("login") {
                 LoginScreen(

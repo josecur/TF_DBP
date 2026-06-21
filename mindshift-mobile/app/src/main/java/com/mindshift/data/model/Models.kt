@@ -102,3 +102,21 @@ data class ReservaResponse(
     val id: Long,
     val estado: String
 )
+
+/**
+ * Reserva tal como la devuelve el backend (con campos calculados).
+ * `medico_contacto` es {"mensaje":"Privado"} si está Pendiente, o {telefono, correo, enlace} si Aceptado.
+ */
+data class ReservaDto(
+    val id: Long,
+    val idUsuario: Long?,
+    val idProfesional: Long?,
+    val estado: String,
+    val fecha: String?,
+    val motivo: String,
+    val alumno_nombre: String,
+    val alumno_correo: String,
+    val nivel_riesgo: String?,
+    val medico_nombre: String,
+    val medico_contacto: Map<String, String?>?
+)

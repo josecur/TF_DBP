@@ -6,6 +6,7 @@ import com.mindshift.data.model.Profesional
 import com.mindshift.data.model.ProfesionalLoginResponse
 import com.mindshift.data.model.RegistroRequest
 import com.mindshift.data.model.RegistroResponse
+import com.mindshift.data.model.ReservaDto
 import com.mindshift.data.model.ReservaRequest
 import com.mindshift.data.model.ReservaResponse
 import com.mindshift.data.model.UsuarioLoginResponse
@@ -13,6 +14,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 /**
  * Definición de los endpoints del backend (equivale a los servicios HTTP de Angular).
@@ -39,4 +41,7 @@ interface ApiService {
 
     @POST("api/reservas/")
     suspend fun crearReserva(@Body req: ReservaRequest): ReservaResponse
+
+    @GET("api/reservas/")
+    suspend fun getReservasUsuario(@Query("idUsuario") idUsuario: Long): List<ReservaDto>
 }
